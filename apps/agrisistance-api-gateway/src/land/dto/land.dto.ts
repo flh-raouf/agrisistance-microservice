@@ -1,6 +1,11 @@
 import { IsNumber, IsString, IsOptional, IsNotEmpty, IsPositive, Min, Max } from 'class-validator';
 
 export class LandDto {
+
+  @IsOptional()
+  @IsString()
+  land_id?: string;
+
   @IsNumber()
   @IsNotEmpty()
   latitude: number;
@@ -57,5 +62,6 @@ export class LandDto {
 
   @IsString()
   @IsNotEmpty()
-  user_id : string;
+  user_id: string;
+  
 }
