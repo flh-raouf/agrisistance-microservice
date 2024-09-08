@@ -1,25 +1,19 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_LAND_URL")
 }
 
 model User {
-  user_id              String   @id @default(uuid()) @db.VarChar(100)
+  user_id              String   @id @default(uuid()) @db.Uuid
   lands                Land[]
 }
 
 model Land {
-  land_id        String   @id @default(uuid()) @db.VarChar(100)
+  land_id        String   @id @default(uuid()) @db.Uuid
   latitude       Float
   longitude      Float
   land_size      Float
@@ -30,7 +24,7 @@ model Land {
   potassium      Float
   oxygen_level   Float
   nitrogen       Float
-  user_id        String   @db.VarChar(100)
+  user_id        String   @db.Uuid
   user           User     @relation(fields: [user_id], references: [user_id])
 
   statistics     LandStatistic[]
@@ -44,55 +38,55 @@ model Land {
 }
 
 model LandStatistic {
-  land_stat_id         String   @id @default(uuid()) @db.VarChar(100)
+  land_stat_id         String   @id @default(uuid()) @db.Uuid
   land_use             Float
   human_coverage       Float
   water_availability   Float
   distribution_optimality Float
   total_profit         Float    @default(0)
-  land_id              String   @db.VarChar(100) @unique
+  land_id              String   @db.Uuid @unique
   land                 Land     @relation(fields: [land_id], references: [land_id])
 }
 
 model Crop {
-  crop_id                String  @id @default(uuid()) @db.VarChar(100)
+  crop_id                String  @id @default(uuid()) @db.Uuid
   crop_name              String  @db.VarChar(30)
   crop_area              Float
   crop_investment        Float
   expected_money_return  Float
   expected_weight_return Float
-  land_id                String  @db.VarChar(100) @unique
+  land_id                String  @db.Uuid @unique
   land                   Land    @relation(fields: [land_id], references: [land_id])
 }
 
 model CropMaintenance {
-  maintenance_id    String   @id @default(uuid()) @db.VarChar(100)
+  maintenance_id    String   @id @default(uuid()) @db.Uuid
   pesticide_level   Float
   water_sufficienty Float
-  land_id           String   @db.VarChar(100) @unique
+  land_id           String   @db.Uuid @unique
   land              Land     @relation(fields: [land_id], references: [land_id])
 }
 
 model Finance {
-  financial_id      String   @id @default(uuid()) @db.VarChar(100)
+  financial_id      String   @id @default(uuid()) @db.Uuid
   investment_amount Float?
   expected_revenue  Float?
-  land_id           String?  @db.VarChar(100) @unique
+  land_id           String?  @db.Uuid @unique
   land              Land?    @relation(fields: [land_id], references: [land_id])
 }
 
 model Weather {
-  weather_id   String  @id @default(uuid()) @db.VarChar(100)
+  weather_id   String  @id @default(uuid()) @db.Uuid
   temperature  Float
   humidity     Float
   rainfall     Float
   sunlight     Float
-  land_id      String? @db.VarChar(100) @unique
+  land_id      String? @db.Uuid @unique
   land         Land?   @relation(fields: [land_id], references: [land_id])
 }
 
 model BusinessPlan {
-  business_plan_id       String @id @default(uuid()) @db.VarChar(100)
+  business_plan_id       String @id @default(uuid()) @db.Uuid
   executive_summary      String @db.Text
   resources              String @db.Text
   crops                  String @db.Text
@@ -100,6 +94,6 @@ model BusinessPlan {
   soil_maintenance       String @db.Text
   profit_estimations     String @db.Text
   other_recommendations  String @db.Text
-  land_id                String @db.VarChar(100) @unique
+  land_id                String @db.Uuid @unique
   land                   Land   @relation(fields: [land_id], references: [land_id])
 }

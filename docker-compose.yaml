@@ -1,5 +1,5 @@
 services:
-  agrisistance-db:
+  agrisistance-land-db:
     image: postgres:16
     restart: always
     ports:
@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_DB: ${POSTGRES_LAND_DB}
     networks:
       - agrisistance-network
 

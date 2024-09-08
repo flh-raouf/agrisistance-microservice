@@ -60,8 +60,8 @@ export class LandDto {
   @IsPositive()
   budget: number;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  user_id: string;
+  user_id?: string;
   
 }

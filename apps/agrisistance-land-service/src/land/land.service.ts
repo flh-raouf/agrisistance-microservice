@@ -1,6 +1,6 @@
 import { ForbiddenException, HttpException, HttpStatus } from "@nestjs/common";
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
+import { PrismaLandService } from "../prisma/prisma-land.service";
 import { LandDto, UserRequestDto } from "./dto";
 import { ConfigService } from "@nestjs/config";
 import * as cloudinary from 'cloudinary';
@@ -12,7 +12,7 @@ import { CloudinaryService } from '../cloudinary/cloudinary.service';
 export class LandService {
 
     constructor(
-        private prisma: PrismaService,
+        private prisma: PrismaLandService,
         private configService: ConfigService,
         private cloudinaryService: CloudinaryService,
     ) {

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { LandModule } from './land/land.module';
-import { PrismaModule } from './prisma/prisma.module';
+import { PrismaLandModule} from './prisma/prisma-land.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ConfigModule } from '@nestjs/config';
 
@@ -11,8 +11,8 @@ import { ConfigModule } from '@nestjs/config';
       isGlobal: true
     }),
     LandModule,
-    PrismaModule,
+    PrismaLandModule,
     CloudinaryModule,
   ],
 })
-export class AppModule {}
+export class LandServiceModule {}
