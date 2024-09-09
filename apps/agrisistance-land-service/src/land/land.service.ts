@@ -1,6 +1,6 @@
 import { ForbiddenException, HttpException, HttpStatus } from "@nestjs/common";
 import { Injectable } from "@nestjs/common";
-import { PrismaLandService } from "../prisma/prisma-land.service";
+import { PrismaLandService } from "../.prisma/prisma-land.service";
 import { LandDto, UserRequestDto } from "./dto";
 import { ConfigService } from "@nestjs/config";
 import * as cloudinary from 'cloudinary';
@@ -299,21 +299,21 @@ export class LandService {
             });
 
             // Call the external service to generate a business plan
-            // const response = await fetch(
-            //     'https://agrisistance-model-backend.onrender.com/generate-business-plan',
-            //     {
-            //       method: 'POST',
-            //       headers: { 'Content-Type': 'application/json' },
-            //       body: JSON.stringify({ land_id: landDto.land_id }),
-            //     }
-            // );
+            const response = await fetch(
+                'http://localhost:8000/generate-business-plan',
+                {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ land_id: landDto.land_id }),
+                }
+            );
 
-            // const businessPlan = await response.json();
+            const businessPlan = await response.json();
 
             return {
                 message: 'Land updated successfully',
                 land_id: landDto.land_id,
-                //businessplan: businessPlan,
+                businessplan: businessPlan,
             };
 
 

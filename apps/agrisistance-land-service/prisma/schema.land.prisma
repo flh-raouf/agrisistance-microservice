@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output = "../generated/land-client"
 }
 
 datasource db {
@@ -55,7 +56,7 @@ model Crop {
   crop_investment        Float
   expected_money_return  Float
   expected_weight_return Float
-  land_id                String  @db.Uuid @unique
+  land_id                String  @db.Uuid
   land                   Land    @relation(fields: [land_id], references: [land_id])
 }
 
