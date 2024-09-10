@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient as PrismaLandClient } from '../../generated/land-client';
 
 @Injectable()
-export class PrismaLandService extends PrismaClient {
+export class PrismaLandService extends PrismaLandClient {
     constructor(config: ConfigService) {
         super({
             datasources: {

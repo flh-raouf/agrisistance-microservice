@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Post, Put, Param, HttpCode, HttpStatus, UseGuards } from "@nestjs/common";
 import { LandService } from "./land.service";
-import { LandDto, UserRequestDto } from "./dto";
+import { LandDto } from "./dto";
 import { JwtGuard } from "../.guard";
 import { JwtDecorator } from "../.decorator";
 
@@ -12,7 +12,7 @@ export class LandController {
 
     // Hello World
     @Get()
-    landServiceHello( ) {
+    landServiceHello() {
         return 'Land Service';
     }
 

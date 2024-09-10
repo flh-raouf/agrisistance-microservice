@@ -198,7 +198,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\STORM Tech\\Desktop\\A2SV-Agrisistance-microservice\\apps\\agrisistance-land-service\\generated\\land-client",
+      "value": "C:\\Users\\STORM Tech\\Desktop\\Code\\A2SV\\A2SV-Agrisistance-microservice\\apps\\agrisistance-land-service\\generated\\land-client",
       "fromEnvVar": null
     },
     "config": {
@@ -212,11 +212,12 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\STORM Tech\\Desktop\\A2SV-Agrisistance-microservice\\apps\\agrisistance-land-service\\prisma\\schema.land.prisma",
+    "sourceFilePath": "C:\\Users\\STORM Tech\\Desktop\\Code\\A2SV\\A2SV-Agrisistance-microservice\\apps\\agrisistance-land-service\\prisma\\schema.land.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": "../../../../.env"
+    "rootEnvPath": "../../../../.env",
+    "schemaEnvPath": "../../../../.env"
   },
   "relativePath": "../../prisma",
   "clientVersion": "5.19.1",

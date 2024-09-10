@@ -27,6 +27,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/agrisistance-api-gateway/tsconfig.app.json"
       }
+    },
+    "agrisistance-user-service": {
+      "type": "application",
+      "root": "apps/agrisistance-user-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/agrisistance-user-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/agrisistance-user-service/tsconfig.app.json"
+      }
     }
   }
 }

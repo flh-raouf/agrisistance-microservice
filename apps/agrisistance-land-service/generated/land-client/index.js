@@ -199,7 +199,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\STORM Tech\\Desktop\\A2SV-Agrisistance-microservice\\apps\\agrisistance-land-service\\generated\\land-client",
+      "value": "C:\\Users\\STORM Tech\\Desktop\\Code\\A2SV\\A2SV-Agrisistance-microservice\\apps\\agrisistance-land-service\\generated\\land-client",
       "fromEnvVar": null
     },
     "config": {
@@ -213,11 +213,12 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\STORM Tech\\Desktop\\A2SV-Agrisistance-microservice\\apps\\agrisistance-land-service\\prisma\\schema.land.prisma",
+    "sourceFilePath": "C:\\Users\\STORM Tech\\Desktop\\Code\\A2SV\\A2SV-Agrisistance-microservice\\apps\\agrisistance-land-service\\prisma\\schema.land.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": "../../../../.env"
+    "rootEnvPath": "../../../../.env",
+    "schemaEnvPath": "../../../../.env"
   },
   "relativePath": "../../prisma",
   "clientVersion": "5.19.1",
@@ -245,8 +246,8 @@ const fs = require('fs')
 config.dirname = __dirname
 if (!fs.existsSync(path.join(__dirname, 'schema.prisma'))) {
   const alternativePaths = [
-    "generated/land-client",
-    "land-client",
+    "apps/agrisistance-land-service/generated/land-client",
+    "agrisistance-land-service/generated/land-client",
   ]
   
   const alternativePath = alternativePaths.find((altPath) => {
@@ -275,7 +276,7 @@ Object.assign(exports, Prisma)
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "query_engine-windows.dll.node");
-path.join(process.cwd(), "generated/land-client/query_engine-windows.dll.node")
+path.join(process.cwd(), "apps/agrisistance-land-service/generated/land-client/query_engine-windows.dll.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
-path.join(process.cwd(), "generated/land-client/schema.prisma")
+path.join(process.cwd(), "apps/agrisistance-land-service/generated/land-client/schema.prisma")

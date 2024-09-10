@@ -27,19 +27,17 @@ export class ModelsService {
             }, HttpStatus.NOT_FOUND);
         }
 
-        return 'success';
-
-        // const response = await fetch('https://agrisistance-model-backend.onrender.com/generate-business-plan', {
-        //     method: 'POST',
-        //     headers: {
-        //       'Content-Type': 'application/json',
-        //     },
-        //     body: JSON.stringify({ land_id })
-        //   });
+        const response = await fetch('http://localhost:8000/generate-business-plan', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ land_id })
+          });
           
-        // const data = await response.json();
+        const data = await response.json();
         
-        // return data;
+        return data;
     }
 
     // Chat Bot

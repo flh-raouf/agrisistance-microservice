@@ -18,6 +18,6 @@ import { JwtStrategy } from '../.strategy';
         ]),
     ],
     controllers : [LandController],
-    providers : [LandService, JwtStrategy], // Add JwtStrategy for JWT Authentication
+    providers : [LandService, JwtStrategy],
 })
 export class LandModule {}
