@@ -6,6 +6,8 @@ import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
+import * as cloudinary from 'cloudinary';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 
 @Injectable()
@@ -17,8 +19,17 @@ export class ProfileService {
         private prisma: PrismaUserService,
         private emailService: EmailService,
         private jwtService: JwtService,
+        private configService: ConfigService,
+        private cloudinaryService: CloudinaryService,
     ) {
         this.stripe = new Stripe(this.config.get<string>('STRIPE_SECRET_KEY'));
+        cloudinary.v2.config({
+            cloud_name: this.configService.get("CLOUDINARY_CLOUD_NAME"),
+            api_key: this.configService.get("CLOUDINARY_API_KEY"),
+            api_secret: this.configService.get("CLOUDINARY_API_SECRET"),
+        });
+
+
     }
 
     async getProfile(user_id: string) {
@@ -41,7 +52,35 @@ export class ProfileService {
 
 
     async updateProfile(profileDto: ProfileDto) {
-        await this.prisma.user.update({
+
+        // if profilepicture exists in database remove the previous one and insert the new one 
+        if (profileDto.profile_picture) {
+
+            const existingProfilePicture = await this.prisma.user.findUnique({
+                where: {
+                    user_id: profileDto.user_id,
+                },
+                select: {
+                    profile_picture: true,
+                },
+            });
+    
+            if (existingProfilePicture?.profile_picture) {
+                const publicId = this.cloudinaryService.extractPublicId(existingProfilePicture.profile_picture);
+                if (publicId) {
+                  await this.cloudinaryService.deleteImageFromCloudinary(publicId, 'Users-Profile-Pictures');
+                }
+              }
+              // Upload the new image to Cloudinary
+              const uploadResult = await cloudinary.v2.uploader.upload(existingProfilePicture.profile_picture, {
+                  folder: 'Agrisistance/Users-Profile-Pictures',
+              });
+              profileDto.profile_picture = uploadResult.secure_url;     
+        }
+
+        
+
+          await this.prisma.user.update({
             where: {
                 user_id: profileDto.user_id,
             },
@@ -50,11 +89,16 @@ export class ProfileService {
                 last_name: profileDto.last_name,
                 country: profileDto.country,
                 phone_number: profileDto.phone_number,
-                profile_picture: profileDto.profile_picture,
+                // profile_picture: profile_picture,
             },
         });
-
         return { message: 'Profile updated successfully' };
+
+
+        
+        
+
+        
     }
 
 

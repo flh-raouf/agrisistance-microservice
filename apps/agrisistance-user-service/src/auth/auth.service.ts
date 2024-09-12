@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaUserService } from '../.prisma/prisma-user/prisma-user.service'
 import { PrismaLandService} from '../.prisma/prisma-land/prisma-land.service'
+import { PrismaNetworkService} from '../.prisma/prisma-network/prisma-network.service'
 import { AuthDto, LoginDto, ResetPasswordDto, VerifyOtpDto } from './dto';
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
 import * as twilio from 'twilio';
 import { EmailService } from '../.email/email.service';
 import { ConfigService } from '@nestjs/config';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class AuthService {
@@ -15,15 +17,16 @@ export class AuthService {
 
     constructor(
         private config: ConfigService,
-        private prismauser: PrismaUserService, 
-        private prismaland: PrismaLandService,
+        private prismaUser: PrismaUserService, 
+        private prismaLand: PrismaLandService,
+        private prismaNetwork: PrismaNetworkService,
         private emailService: EmailService,
         private jwtService: JwtService,
     ) {}
 
     async register(authDto: AuthDto) {
         // Check if the Email is already taken;
-        const user = await this.prismauser.user.findUnique({
+        const user = await this.prismaUser.user.findUnique({
             where: {
                 email: authDto.email
             }
@@ -35,7 +38,7 @@ export class AuthService {
 
         const hashedPassword = await argon.hash(authDto.password);
 
-        const newUser = await this.prismauser.user.create({
+        const newUser = await this.prismaUser.user.create({
             data:{
                 first_name: authDto.firstName,
                 last_name: authDto.lastName,
@@ -46,11 +49,23 @@ export class AuthService {
             }
         })
 
-        await this.prismaland.user.create({
+        await this.prismaLand.user.create({
             data:{
                 user_id: newUser.user_id,
             }
         })
+
+        await this.prismaNetwork.user.create({
+            data:{
+                user_id: newUser.user_id,
+                first_name: authDto.firstName,
+                last_name: authDto.lastName,
+                country: authDto.country,
+                phone_number: authDto.phoneNumber,
+            }
+        })
+
+
 
         // TODO: Register user in the network database 
 
@@ -62,7 +77,7 @@ export class AuthService {
 
     async verify(token: string) {
         const { user_id } = await this.jwtService.verifyAsync(token);
-        await this.prismauser.user.update({
+        await this.prismaUser.user.update({
             where: {
                 user_id,
             },
@@ -77,7 +92,7 @@ export class AuthService {
 
     async login(loginDto: LoginDto) {
         // Check if the user exists
-        const user = await this.prismauser.user.findUnique({
+        const user = await this.prismaUser.user.findUnique({
             where: {
                 email: loginDto.email
             }
@@ -102,7 +117,7 @@ export class AuthService {
         // Check if 2FA enabled
         if (user.is_2fa_enabled) {
             const otp = Math.floor(100000 + Math.random() * 900000);
-            await this.prismauser.user.update({
+            await this.prismaUser.user.update({
                 where: {
                     user_id: user.user_id,
                 },
@@ -137,7 +152,7 @@ export class AuthService {
 
     async verifyOtp(verifyOtpDto: VerifyOtpDto) {
         // Check if the user requested an OTP
-        const user = await this.prismauser.user.findUnique({
+        const user = await this.prismaUser.user.findUnique({
             where: {
                 user_id: verifyOtpDto.user_id
             },
@@ -159,7 +174,7 @@ export class AuthService {
 
     async forgotPassword(email: string) {
         // Check if the user exists
-        const user = await this.prismauser.user.findUnique({
+        const user = await this.prismaUser.user.findUnique({
             where: {
                 email
             }
@@ -179,7 +194,7 @@ export class AuthService {
         const { user_id } = await this.jwtService.verifyAsync(resetPasswordDto.token);
         const hashedPassword = await argon.hash(resetPasswordDto.newPassword);
 
-        await this.prismauser.user.update({
+        await this.prismaUser.user.update({
             where: {
                 user_id,
             },
