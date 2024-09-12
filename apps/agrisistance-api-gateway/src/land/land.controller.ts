@@ -5,12 +5,13 @@ import { JwtGuard } from "../.guard";
 import { JwtDecorator } from "../.decorator";
 
 
-@UseGuards(JwtGuard)
+// @UseGuards(JwtGuard)
 @Controller('land')
 export class LandController {
     constructor(private landService: LandService) {}
 
     // Hello World
+
     @Get()
     landServiceHello() {
         return 'Land Service';

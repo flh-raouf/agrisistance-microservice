@@ -174,71 +174,139 @@ export class PostService {
 
 
     async getMyPosts(user_id: string) {
-
+        // Fetch the user's posts along with user information
         const myPosts = await this.prisma.post.findMany({
             where: {
                 user_id: user_id,
             },
+            include: {
+                user: {
+                    select: {
+                        user_id: true,
+                        first_name: true,
+                        last_name: true,
+                        country: true,
+                        phone_number: true,
+                        profile_picture: true,
+                    },
+                },
+            },
         });
+        
         return myPosts;
     }
+    
 
 
-    async getAllPosts(user_id) {
-
-        // fetch the last seen post by the user
-        const lastSeenPost = await this.prisma.user_Seen_Post.findFirst({
+    async getAllPosts(user_id: string) {
+        // Fetch all posts seen by the user
+        const seenPosts = await this.prisma.user_Seen_Post.findMany({
             where: {
                 user_id: user_id,
             },
-            orderBy: {
-                seen_date: 'desc',
-            },
             select: {
-                user_seen_post_id: true,
+                post_id: true,
             },
         });
-
-        // send 30 posts to the user starting from last post sent
+    
+        // Extract the post IDs that have already been seen by the user
+        const seenPostIds = seenPosts.map((seenPost) => seenPost.post_id);
+    
+        // Fetch the next 30 unseen posts along with user information
         const posts = await this.prisma.post.findMany({
-            cursor: {
-                post_id: lastSeenPost.user_seen_post_id,
+            where: {
+                post_id: {
+                    notIn: seenPostIds, // Exclude posts that have been seen
+                },
             },
             take: 30,
+            include: {
+                user: {
+                    select: {
+                        user_id: true,
+                        first_name: true,
+                        last_name: true,
+                        country: true,
+                        phone_number: true,
+                        profile_picture: true,
+                    },
+                },
+            },
         });
-
-
+    
+        // Insert these posts into the user_seen_post table
+        const userSeenPosts = posts.map((post) => {
+            return {
+                user_id: user_id,
+                post_id: post.post_id,
+            };
+        });
+    
+        await this.prisma.user_Seen_Post.createMany({
+            data: userSeenPosts,
+        });
+    
+        // Return the fetched posts
         return posts;
     }
-
-
+    
+    
     async getPostByType(getPostByTypeDto: GetPostByTypeDto) {
-            
-            // fetch the last seen post by the user
-        const lastSeenPost = await this.prisma.user_Seen_Post.findFirst({
+        const { user_id, post_type } = getPostByTypeDto;
+    
+        // Fetch all seen posts of the specified type by the user
+        const seenPosts = await this.prisma.user_Seen_Post.findMany({
             where: {
-                user_id: getPostByTypeDto.user_id,
-            },
-            orderBy: {
-                seen_date: 'desc',
+                user_id: user_id,
+                post: {
+                    post_type: post_type, // Ensure filtering by post type
+                },
             },
             select: {
-                user_seen_post_id: true,
+                post_id: true,
             },
         });
-
-        // send 30 posts to the user starting from last post sent
+    
+        // Extract the post IDs that have already been seen by the user
+        const seenPostIds = seenPosts.map((seenPost) => seenPost.post_id);
+    
+        // Fetch the next 30 unseen posts of the specified type along with user information
         const posts = await this.prisma.post.findMany({
             where: {
-                post_type: getPostByTypeDto.post_type,
-            },
-            cursor: {
-                post_id: lastSeenPost.user_seen_post_id,
+                post_type: post_type,
+                post_id: {
+                    notIn: seenPostIds, // Exclude the posts that have been seen
+                },
             },
             take: 30,
+            include: {
+                user: {
+                    select: {
+                        user_id: true,
+                        first_name: true,
+                        last_name: true,
+                        country: true,
+                        phone_number: true,
+                        profile_picture: true,
+                    },
+                },
+            },
         });
-
+    
+        // Insert these posts into the user_seen_post table
+        const userSeenPosts = posts.map((post) => {
+            return {
+                user_id: user_id,
+                post_id: post.post_id,
+            };
+        });
+    
+        await this.prisma.user_Seen_Post.createMany({
+            data: userSeenPosts,
+        });
+    
+        // Return the fetched posts
         return posts;
     }
-
+    
 }

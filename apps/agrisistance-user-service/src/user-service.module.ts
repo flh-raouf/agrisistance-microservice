@@ -7,6 +7,9 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaLandModule } from './.prisma/prisma-land/prisma-land.module';
 import { PrismaNetworkModule } from './.prisma/prisma-network/prisma-network.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ScheduleTaskService } from './events/schedule.service';
+
 
 
 @Module({
@@ -16,11 +19,16 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     }),
     ProfileModule,
     AuthModule,
+
     PrismaUserModule,
     PrismaLandModule,
     PrismaNetworkModule,
+
     CloudinaryModule,
     EmailModule,
+
+    ScheduleModule.forRoot(),
+    ScheduleTaskService,
   ],
 })
 export class UserServiceModule {}

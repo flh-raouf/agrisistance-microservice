@@ -10,17 +10,20 @@ import * as cloudinary from 'cloudinary';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 
+
 @Injectable()
 export class ProfileService {
-    private readonly stripe: Stripe;
 
     constructor(
-        private config: ConfigService,
-        private prisma: PrismaUserService,
-        private emailService: EmailService,
-        private jwtService: JwtService,
-        private configService: ConfigService,
-        private cloudinaryService: CloudinaryService,
+        
+        private readonly config: ConfigService,
+        private readonly prisma: PrismaUserService,
+        private readonly emailService: EmailService,
+        private readonly jwtService: JwtService,
+        private readonly configService: ConfigService,
+        private readonly cloudinaryService: CloudinaryService,
+        private readonly stripe: Stripe,
+
     ) {
         this.stripe = new Stripe(this.config.get<string>('STRIPE_SECRET_KEY'));
         cloudinary.v2.config({
@@ -78,9 +81,8 @@ export class ProfileService {
               profileDto.profile_picture = uploadResult.secure_url;     
         }
 
-        
-
-          await this.prisma.user.update({
+        // Update the profile
+        await this.prisma.user.update({
             where: {
                 user_id: profileDto.user_id,
             },
@@ -89,21 +91,16 @@ export class ProfileService {
                 last_name: profileDto.last_name,
                 country: profileDto.country,
                 phone_number: profileDto.phone_number,
-                // profile_picture: profile_picture,
+                profile_picture: profileDto.profile_picture,
             },
         });
         return { message: 'Profile updated successfully' };
-
-
-        
-        
-
         
     }
 
 
     async deleteProfile(user_id: string) {
-        const [deletion, email] = await Promise.all([
+        const [_, email] = await Promise.all([
         
             this.prisma.user.update({
                 where: {

@@ -145,6 +145,17 @@ export class AuthService {
             return { message: 'Please verify your OTP' };
         }
 
+        // Remove the deletion request if it exists once logged in
+        await this.prismaUser.user.update({
+            where: {
+                user_id: user.user_id,
+            },
+            data: {
+                deletion_requested_at: null,
+                last_login: new Date(Date.now()),
+            },
+        })
+
         // Generate a JWT token
         const token = this.jwtService.sign({ user_id: user.user_id }, { expiresIn: '10d' });
         return { message: 'Loged successfully', token };
@@ -166,6 +177,19 @@ export class AuthService {
         if (verifyOtpDto.otp !== user.secret_2fa) {
             return { error: 'Invalid OTP' };
         }
+
+
+        // Remove the deletion request if it exists once logged in
+        await this.prismaUser.user.update({
+            where: {
+                user_id: user.user_id,
+            },
+            data: {
+                secret_2fa: null,
+                deletion_requested_at: null,
+                last_login: new Date(Date.now()),
+            },
+        })
 
         // Generate a JWT token
         const token = this.jwtService.sign({ user_id: verifyOtpDto.user_id }, { expiresIn: '10d' });

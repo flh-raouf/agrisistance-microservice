@@ -3,6 +3,7 @@ import { JwtStrategy } from "../.strategy/jwt.strategy";
 import { ConfigModule } from "@nestjs/config";
 import { NetworkController } from './network.controller';
 import { NetworkService } from './network.service';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 
 @Module({
@@ -10,6 +11,12 @@ import { NetworkService } from './network.service';
         ConfigModule.forRoot({
             isGlobal: true
         }),
+        ClientsModule.register([
+            {
+              name: 'NETWORK_SERVICE',
+              transport: Transport.TCP,
+            }
+        ]),
     ],
     controllers: [NetworkController],
     providers: [NetworkService, JwtStrategy],

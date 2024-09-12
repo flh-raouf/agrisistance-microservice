@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsIn, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class CreatePostDto {
     
@@ -20,5 +20,6 @@ export class CreatePostDto {
 
     @IsString()
     @IsNotEmpty()
+    @IsIn(['opportunitiesAndPartnership', 'businessPromotion', 'resourcesAndProducts' ])
     post_type: string;
 }

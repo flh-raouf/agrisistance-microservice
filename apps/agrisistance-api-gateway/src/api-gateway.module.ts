@@ -28,6 +28,5 @@ import { NetworkModule } from './network/network.module';
     provide: APP_GUARD,
     useClass: ThrottlerGuard,
   }],
-  controllers: [],
 })
 export class ApiGatewayModule {}
