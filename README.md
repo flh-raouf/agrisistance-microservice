@@ -197,7 +197,7 @@ Before you begin, ensure you have the following installed:
 
 ## Running the Application
 
-1. **Start Docker Containers for Databases**:
+1. **Start Docker Containers for Databases and Redis Cache**:
 
     - Start the user database container:
       ```bash
@@ -212,6 +212,11 @@ Before you begin, ensure you have the following installed:
     - Start the network database container:
       ```bash
       docker compose up agrisistance-network-db -d
+      ```
+
+    - Start the Redis cache:
+      ```bash
+      docker compose up agrisistance-redis-cache -d
       ```
 
 2. **Run Prisma Migrations for Each Database**:
@@ -303,4 +308,4 @@ Before you begin, ensure you have the following installed:
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for more information.
+This project is licensed under the Apache 2.0 License. See the [LICENSE](./LICENSE) file for more information.

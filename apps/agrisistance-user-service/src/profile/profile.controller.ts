@@ -41,6 +41,6 @@ export class ProfileController {
 
     @EventPattern('UpdateSubcription')
     async updateSubcription(userSubscriptionReqDto: UserSubscriptionReqDto) {
-        return this.profileService.updateSubcription(userSubscriptionReqDto);
+        return this.profileService.updateSubscription(userSubscriptionReqDto);
     }
 }

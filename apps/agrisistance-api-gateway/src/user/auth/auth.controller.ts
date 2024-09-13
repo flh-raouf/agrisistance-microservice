@@ -41,7 +41,7 @@ export class AuthController {
     @Post('verify-otp')
     async verifyOtp(
         @JwtDecorator('user_id') user_id: string,
-        @Body('otp') verifyOtpDto: VerifyOtpDto
+        @Body() verifyOtpDto: VerifyOtpDto
     ) {
         return this.authService.verifyOtp(user_id, verifyOtpDto);
     }

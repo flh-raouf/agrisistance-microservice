@@ -1,232 +1,229 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaUserService } from '../.prisma/prisma-user/prisma-user.service'
-import { PrismaLandService} from '../.prisma/prisma-land/prisma-land.service'
-import { PrismaNetworkService} from '../.prisma/prisma-network/prisma-network.service'
+import { Injectable, HttpException, HttpStatus, NotFoundException, BadRequestException, InternalServerErrorException, Inject } from '@nestjs/common';
+import { PrismaUserService } from '../.prisma/prisma-user/prisma-user.service';
+import { PrismaLandService } from '../.prisma/prisma-land/prisma-land.service';
+import { PrismaNetworkService } from '../.prisma/prisma-network/prisma-network.service';
 import { AuthDto, LoginDto, ResetPasswordDto, VerifyOtpDto } from './dto';
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
 import * as twilio from 'twilio';
 import { EmailService } from '../.email/email.service';
 import { ConfigService } from '@nestjs/config';
-import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class AuthService {
-    
     private client = twilio(this.config.get<string>('TWILIO_SID'), this.config.get<string>('TWILIO_API_KEY'));
 
     constructor(
-        private config: ConfigService,
-        private prismaUser: PrismaUserService, 
-        private prismaLand: PrismaLandService,
-        private prismaNetwork: PrismaNetworkService,
-        private emailService: EmailService,
-        private jwtService: JwtService,
+        private readonly config: ConfigService,
+        private readonly prismaUser: PrismaUserService,
+        private readonly prismaLand: PrismaLandService,
+        private readonly prismaNetwork: PrismaNetworkService,
+        private readonly emailService: EmailService,
+        private readonly jwtService: JwtService,
+
+        @Inject('CACHE_MANAGER') private cacheManager: Cache
     ) {}
 
     async register(authDto: AuthDto) {
-        // Check if the Email is already taken;
-        const user = await this.prismaUser.user.findUnique({
-            where: {
-                email: authDto.email
+        try {
+            const user = await this.prismaUser.user.findUnique({
+                where: { email: authDto.email },
+            });
+
+            if (user) {
+                throw new BadRequestException('E-mail already exists');
             }
-        });
 
-        if(user) {
-            return { error: 'E-mail already exists' };
-        }
+            const hashedPassword = await argon.hash(authDto.password);
 
-        const hashedPassword = await argon.hash(authDto.password);
-
-        const newUser = await this.prismaUser.user.create({
-            data:{
-                first_name: authDto.firstName,
-                last_name: authDto.lastName,
-                email: authDto.email,
-                password: hashedPassword,
-                country: authDto.country,
-                phone_number: authDto.phoneNumber,
-            }
-        })
-
-        await this.prismaLand.user.create({
-            data:{
-                user_id: newUser.user_id,
-            }
-        })
-
-        await this.prismaNetwork.user.create({
-            data:{
-                user_id: newUser.user_id,
-                first_name: authDto.firstName,
-                last_name: authDto.lastName,
-                country: authDto.country,
-                phone_number: authDto.phoneNumber,
-            }
-        })
-
-
-
-        // TODO: Register user in the network database 
-
-        const token = this.jwtService.sign({ user_id: newUser.user_id }, { expiresIn: '10m' });
-        await this.emailService.sendEmail(newUser.email, token, 'confirmation');
-
-        return { message: 'User created successfully please verify your account via the link sent by Email' };
-    }
-
-    async verify(token: string) {
-        const { user_id } = await this.jwtService.verifyAsync(token);
-        await this.prismaUser.user.update({
-            where: {
-                user_id,
-            },
-            data: {
-                is_verified: true,
-            },
-        });
-
-        const realToken = this.jwtService.sign({ user_id }, { expiresIn: '10d' });
-        return { message: 'Account verified successfully', token: realToken };
-    }
-
-    async login(loginDto: LoginDto) {
-        // Check if the user exists
-        const user = await this.prismaUser.user.findUnique({
-            where: {
-                email: loginDto.email
-            }
-        });
-
-        if(!user) {
-            return { error: 'User not found' };
-        }
-
-        // Check if the password is correct
-        if (!await argon.verify(user.password, loginDto.password)) {
-            return { error: 'Invalid password' };
-        }
-
-        // Check if the Email is verified
-        if (!user.is_verified) {
-            const token = this.jwtService.sign({ user_id: user.user_id }, { expiresIn: '10m' });
-            await this.emailService.sendEmail(user.email, token, 'confirmation');
-            return { error: 'Please verify your account' };
-        }
-
-        // Check if 2FA enabled
-        if (user.is_2fa_enabled) {
-            const otp = Math.floor(100000 + Math.random() * 900000);
-            await this.prismaUser.user.update({
-                where: {
-                    user_id: user.user_id,
-                },
+            const newUser = await this.prismaUser.user.create({
                 data: {
-                    secret_2fa: otp.toString(),
+                    first_name: authDto.firstName,
+                    last_name: authDto.lastName,
+                    email: authDto.email,
+                    password: hashedPassword,
+                    country: authDto.country,
+                    phone_number: authDto.phoneNumber,
                 },
             });
 
-            // Send the SMS Text : This part is commented as it consume credits from my twilio account (it works fine)
+            await this.prismaLand.user.create({
+                data: { user_id: newUser.user_id },
+            });
 
-            // await this.client.messages.create({
-            //     body: `Dear User,
+            await this.prismaNetwork.user.create({
+                data: {
+                    user_id: newUser.user_id,
+                    first_name: authDto.firstName,
+                    last_name: authDto.lastName,
+                    country: authDto.country,
+                    phone_number: authDto.phoneNumber,
+                },
+            });
 
-            //         Your A2SV-Agrisistance verification code is ${otp}. Please enter this code in the app/website to verify your account.
+            const token = this.jwtService.sign({ user_id: newUser.user_id }, { expiresIn: '10m' });
+            await this.emailService.sendEmail(newUser.email, token, 'confirmation');
 
-            //         Thank you.`,
-
-            //     from: this.config.get<string>('TWILIO_PHONE_NUMBER'),
-            
-            //     to: user.phone_number,
-            // }).then(message => console.log(message.sid));
-
-            // Send it via email instead
-            await this.emailService.sendEmail(user.email, otp.toString(), 'otp');
-            return { message: 'Please verify your OTP' };
+            return { message: 'User created successfully. Please verify your account via the link sent by Email' };
+        } catch (error) {
+            console.error('Registration error:', error);
+            throw new InternalServerErrorException('Failed to register user.');
         }
+    }
 
-        // Remove the deletion request if it exists once logged in
-        await this.prismaUser.user.update({
-            where: {
-                user_id: user.user_id,
-            },
-            data: {
-                deletion_requested_at: null,
-                last_login: new Date(Date.now()),
-            },
-        })
+    async verify(token: string) {
+        try {
+            const { user_id } = await this.jwtService.verifyAsync(token);
+            await this.prismaUser.user.update({
+                where: { user_id },
+                data: { is_verified: true },
+            });
 
-        // Generate a JWT token
-        const token = this.jwtService.sign({ user_id: user.user_id }, { expiresIn: '10d' });
-        return { message: 'Loged successfully', token };
+            const realToken = this.jwtService.sign({ user_id }, { expiresIn: '10d' });
+            return { message: 'Account verified successfully', token: realToken };
+        } catch (error) {
+            console.error('Verification error:', error);
+            throw new BadRequestException('Invalid verification token.');
+        }
+    }
+
+    async login(loginDto: LoginDto) {
+        try {
+            const user = await this.prismaUser.user.findUnique({
+                where: { email: loginDto.email },
+            });
+
+            if (!user) {
+                throw new NotFoundException('User not found');
+            }
+
+            if (!await argon.verify(user.password, loginDto.password)) {
+                throw new BadRequestException('Invalid password');
+            }
+
+            if (!user.is_verified) {
+                const token = this.jwtService.sign({ user_id: user.user_id }, { expiresIn: '10m' });
+                await this.emailService.sendEmail(user.email, token, 'confirmation');
+                throw new BadRequestException('Please verify your account');
+            }
+
+            if (user.is_2fa_enabled) {
+                const otp = Math.floor(100000 + Math.random() * 900000);
+                
+                // We use Either database for verification
+                // await this.prismaUser.user.update({
+                //     where: { user_id: user.user_id },
+                //     data: { secret_2fa: otp.toString() },
+                // });
+
+
+                // Or we use Redis
+                await this.cacheManager.set(user.user_id, otp)
+
+
+                // Send the SMS Text : This part is commented as it consume credits from my twilio account (it works fine)
+
+                // await this.client.messages.create({
+                //     body: `Dear User,
+                
+                //         Your A2SV-Agrisistance verification code is ${otp}. Please enter this code in the app/website to verify your account.
+                
+                //         Thank you.`,
+                
+                //     from: this.config.get<string>('TWILIO_PHONE_NUMBER'),
+                
+                //     to: user.phone_number,
+                // }).then(message => console.log(message.sid));
+                
+                // Send it via email instead
+
+                await this.emailService.sendEmail(user.email, otp.toString(), 'OTPverify');
+                const token = this.jwtService.sign({ user_id: user.user_id }, { expiresIn: '10m' });
+                return { message: 'Please verify your OTP', token };
+            }
+
+            await this.prismaUser.user.update({
+                where: { user_id: user.user_id },
+                data: { deletion_requested_at: null, last_login: new Date() },
+            });
+
+            const token = this.jwtService.sign({ user_id: user.user_id }, { expiresIn: '10d' });
+            return { message: 'Logged in successfully', token };
+        } catch (error) {
+            console.error('Login error:', error);
+            throw new InternalServerErrorException('Failed to login.');
+        }
     }
 
     async verifyOtp(verifyOtpDto: VerifyOtpDto) {
-        // Check if the user requested an OTP
-        const user = await this.prismaUser.user.findUnique({
-            where: {
-                user_id: verifyOtpDto.user_id
-            },
-        });
+        try {
+            // We use Either database for verification
 
-        if(!user || !user.secret_2fa) {
-            return { error: 'User not found' };
+            // const user = await this.prismaUser.user.findUnique({
+            //     where: { user_id: verifyOtpDto.user_id },
+            // });
+
+            // if (!user || !user.secret_2fa) {
+            //     throw new NotFoundException('User not found');
+            // }
+
+
+             // Or caching using Redis
+            const secret_2fa = await this.cacheManager.get(verifyOtpDto.user_id)
+            
+            // if (verifyOtpDto.otp !== user.secret_2fa) {
+            if (verifyOtpDto.otp !== secret_2fa) {
+                throw new BadRequestException('Invalid OTP');
+            }
+
+            await this.prismaUser.user.update({
+                where: { user_id: verifyOtpDto.user_id },
+                data: { secret_2fa: null, deletion_requested_at: null, last_login: new Date() },
+            });
+
+            const token = this.jwtService.sign({ user_id: verifyOtpDto.user_id }, { expiresIn: '10d' });
+            return { message: 'OTP verified successfully', token };
+        } catch (error) {
+            console.error('OTP verification error:', error);
+            throw new InternalServerErrorException('Failed to verify OTP.');
         }
-
-        // Verify the OTP
-        if (verifyOtpDto.otp !== user.secret_2fa) {
-            return { error: 'Invalid OTP' };
-        }
-
-
-        // Remove the deletion request if it exists once logged in
-        await this.prismaUser.user.update({
-            where: {
-                user_id: user.user_id,
-            },
-            data: {
-                secret_2fa: null,
-                deletion_requested_at: null,
-                last_login: new Date(Date.now()),
-            },
-        })
-
-        // Generate a JWT token
-        const token = this.jwtService.sign({ user_id: verifyOtpDto.user_id }, { expiresIn: '10d' });
-        return { message: 'OTP verified successfully', token };
     }
 
     async forgotPassword(email: string) {
-        // Check if the user exists
-        const user = await this.prismaUser.user.findUnique({
-            where: {
-                email
+        try {
+            const user = await this.prismaUser.user.findUnique({
+                where: { email },
+            });
+
+            if (!user) {
+                throw new NotFoundException('User not found');
             }
-        });
 
-        if(!user) {
-            return { error: 'User not found' };
+            const token = this.jwtService.sign({ user_id: user.user_id }, { expiresIn: '10m' });
+            await this.emailService.sendEmail(email, token, 'resetPassword');
+
+            return { message: 'Password reset link sent to your email' };
+        } catch (error) {
+            console.error('Forgot password error:', error);
+            throw new InternalServerErrorException('Failed to send password reset link.');
         }
-
-        const token = this.jwtService.sign({ user_id: user.user_id }, { expiresIn: '10m' });
-        await this.emailService.sendEmail(email, token, 'resetPassword');
-
-        return { message: 'Password reset link sent to your email' };
     }
 
     async resetPassword(resetPasswordDto: ResetPasswordDto) {
-        const { user_id } = await this.jwtService.verifyAsync(resetPasswordDto.token);
-        const hashedPassword = await argon.hash(resetPasswordDto.newPassword);
+        try {
+            const { user_id } = await this.jwtService.verifyAsync(resetPasswordDto.token);
+            const hashedPassword = await argon.hash(resetPasswordDto.newPassword);
 
-        await this.prismaUser.user.update({
-            where: {
-                user_id,
-            },
-            data: {
-                password: hashedPassword,
-            },
-        });
+            await this.prismaUser.user.update({
+                where: { user_id },
+                data: { password: hashedPassword },
+            });
 
-        return { message: 'Password reset successfully' };
+            return { message: 'Password reset successfully' };
+        } catch (error) {
+            console.error('Reset password error:', error);
+            throw new BadRequestException('Invalid reset token or failed to reset password.');
+        }
     }
 }
