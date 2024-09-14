@@ -82,7 +82,10 @@ Before you begin, ensure you have the following installed:
 
     DATABASE_LAND_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:5434/${POSTGRES_LAND_DB}?schema=public'
     DATABASE_USER_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:5435/${POSTGRES_USER_DB}?schema=public'
-    DATABASE_NETWORK_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:5435/${POSTGRES_NETWORK_DB}?schema=public'
+    DATABASE_NETWORK_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:5436/${POSTGRES_NETWORK_DB}?schema=public'
+
+    REDIS_HOST = "localhost"
+    REDIS_PORT = 6380
 
     EMAIL_USER=''
     EMAIL_PASSWORD='' 
@@ -199,6 +202,8 @@ Before you begin, ensure you have the following installed:
 
 1. **Start Docker Containers for Databases and Redis Cache**:
 
+  - Ensure that Docker is running, either in the foreground or background, before proceeding. 
+
     - Start the user database container:
       ```bash
       docker compose up agrisistance-user-db -d
@@ -217,6 +222,11 @@ Before you begin, ensure you have the following installed:
     - Start the Redis cache:
       ```bash
       docker compose up agrisistance-redis-cache -d
+      ```
+
+    By following these steps, your databases should be up and running. To verify that everything is working correctly, run the following command:
+      ```bash
+        docker ps
       ```
 
 2. **Run Prisma Migrations for Each Database**:
@@ -259,6 +269,8 @@ Before you begin, ensure you have the following installed:
       npx prisma generate --schema=./apps/agrisistance-user-service/prisma/schema.network.prisma
       ```
 
+    
+
 4. **Launch Databases with Prisma Studio**:
 
     - Open Prisma Studio for the land service:
@@ -277,6 +289,8 @@ Before you begin, ensure you have the following installed:
       ```
 
 5. **Run the Project Services**:
+
+  - Start the services in different terminals
 
     - Start the API Gateway service:
       ```bash
@@ -297,14 +311,21 @@ Before you begin, ensure you have the following installed:
       ```bash
       npm run start:dev agrisistance-network-service
       ```
+    Your project should now be running at `http://localhost:9090`.
 
 6. **Run the Flask Microservice**:
 
     - The Flask microservice handles AI models. You can find the repository [here](https://github.com/AGRISISTANCE/Agrisistance-Model-Backend).
 
 
+ ## Postman Documentation
 
-    Your project should now be running at `http://localhost:9090`.
+   After running the server, you can use the Postman collection to test the available endpoints. The Postman documentation provides a detailed overview of all the requests you can make to interact with the API.
+
+   - You can find the Postman documentation for this project [here](https://documenter.getpostman.com/view/32136798/2sAXqngkQA).
+
+   Make sure the server is running at `http://localhost:9090` before testing the endpoints in Postman.
+    
 
 ## License
 

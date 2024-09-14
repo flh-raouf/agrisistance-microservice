@@ -1,8 +1,8 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, UseGuards } from "@nestjs/common";
 import { JwtGuard } from "../.guard/jwt.guard";
 import { JwtDecorator } from "../.decorator";
 import { NetworkService } from "./network.service";
-import { ArchiveDeletePostDto, CreatePostDto, UpdatePostDto, GetPostByTypeDto } from "./dto";
+import { ArchiveDeletePostDto, CreatePostDto, UpdatePostDto } from "./dto";
 
 @Controller('network')
 @UseGuards(JwtGuard)
@@ -20,18 +20,19 @@ export class NetworkController {
     }
 
 
-    @Post('update-post')
+    @Put('update-post/:post_id')
     @HttpCode(HttpStatus.OK)
     async updatePost(
+        @Param('post_id') post_id: string,
         @Body() updatePostDto: UpdatePostDto,
         @JwtDecorator('user_id') user_id: string,
     ){
-        return this.networkService.updatePost(user_id, updatePostDto);
+        return this.networkService.updatePost(user_id, post_id, updatePostDto);
     }
 
 
 
-    @Put('archive-post')
+    @Patch('archive-post')
     @HttpCode(HttpStatus.OK)
     async archivePost(
         @Body() archivePostDto: ArchiveDeletePostDto,
@@ -41,7 +42,7 @@ export class NetworkController {
     }
 
 
-    @Put('delete-post')
+    @Delete('delete-post')
     @HttpCode(HttpStatus.OK)
     async deletePost(
         @Body() deletePostDto: ArchiveDeletePostDto,

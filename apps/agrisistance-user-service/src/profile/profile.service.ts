@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, HttpStatus } from '@nestjs/common';
 import { PrismaUserService } from '../.prisma/prisma-user/prisma-user.service';
 import { ProfileDto, UserEmailReqDto, UserEmailVerifyReqDto, UserPasswordReqDto, UserSubscriptionReqDto } from './dto';
 import { EmailService } from '../.email/email.service';
@@ -28,23 +28,20 @@ export class ProfileService {
         });
     }
 
-    private async handleCloudinaryImage(profilePicture: string) {
-        try {
-            if (profilePicture) {
-                const publicId = this.cloudinaryService.extractPublicId(profilePicture);
-                if (publicId) {
-                    await this.cloudinaryService.deleteImageFromCloudinary(publicId, 'Users-Profile-Pictures');
-                }
-                const uploadResult = await cloudinary.v2.uploader.upload(profilePicture, {
-                    folder: 'Agrisistance/Users-Profile-Pictures',
-                });
-                return uploadResult.secure_url;
+    private async handleCloudinaryImage(profilePicture: string){
+        
+        if (profilePicture) {
+            const publicId = this.cloudinaryService.extractPublicId(profilePicture);
+            if (publicId) {
+                await this.cloudinaryService.deleteImageFromCloudinary(publicId, 'Users-Profile-Pictures');
             }
-            return profilePicture;
-        } catch (error) {
-            console.error('Error handling Cloudinary image:', error);
-            throw new InternalServerErrorException('Failed to process the profile picture.');
+            const uploadResult = await cloudinary.v2.uploader.upload(profilePicture, {
+                folder: 'Agrisistance/Users-Profile-Pictures',
+            });
+            return uploadResult.secure_url;
         }
+        return profilePicture;
+        
     }
 
     async getProfile(user_id: string) {
@@ -63,12 +60,20 @@ export class ProfileService {
                 },
             });
             if (!userProfile) {
-                throw new NotFoundException('User profile not found.');
+                return {
+                    statusCode: HttpStatus.NOT_FOUND,
+                    timestamp: new Date().toISOString(),
+                    message: 'User profile not found.',
+                };
             }
             return userProfile;
         } catch (error) {
             console.error('Error fetching profile:', error);
-            throw new InternalServerErrorException('Could not fetch profile data.');
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                message: 'Could not fetch profile data.',
+            };
         }
     }
 
@@ -91,7 +96,11 @@ export class ProfileService {
             return { message: 'Profile updated successfully' };
         } catch (error) {
             console.error('Error updating profile:', error);
-            throw new InternalServerErrorException('Failed to update profile.');
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                message: 'Failed to update profile.',
+            };
         }
     }
 
@@ -112,7 +121,11 @@ export class ProfileService {
             return { message: 'Account deletion request received successfully. Please check your email.' };
         } catch (error) {
             console.error('Error deleting profile:', error);
-            throw new InternalServerErrorException('Failed to process account deletion.');
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                message: 'Failed to process account deletion.',
+            };
         }
     }
 
@@ -123,7 +136,11 @@ export class ProfileService {
             });
 
             if (emailInUse) {
-                throw new BadRequestException('Email already in use');
+                return {
+                    statusCode: HttpStatus.BAD_REQUEST,
+                    timestamp: new Date().toISOString(),
+                    message: 'Email already in use.',
+                };
             }
 
             const payload = { user_id: userEmailReqDto.user_id, email: userEmailReqDto.email };
@@ -133,7 +150,11 @@ export class ProfileService {
             return { message: 'Verification email sent' };
         } catch (error) {
             console.error('Error updating email:', error);
-            throw new InternalServerErrorException('Failed to update email.');
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                message: 'Failed to update email.',
+            };
         }
     }
 
@@ -146,7 +167,11 @@ export class ProfileService {
             return { message: 'Email updated successfully' };
         } catch (error) {
             console.error('Error verifying email update:', error);
-            throw new InternalServerErrorException('Failed to verify email update.');
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                message: 'Failed to verify email update.',
+            };
         }
     }
 
@@ -158,7 +183,11 @@ export class ProfileService {
             });
 
             if (!user || !(await argon.verify(user.password, userPasswordReqDto.oldPassword))) {
-                throw new BadRequestException('Invalid password');
+                return {
+                    statusCode: HttpStatus.BAD_REQUEST,
+                    timestamp: new Date().toISOString(),
+                    message: 'Invalid password.',
+                };
             }
 
             const hashedPassword = await argon.hash(userPasswordReqDto.newPassword);
@@ -170,7 +199,11 @@ export class ProfileService {
             return { message: 'Password updated successfully' };
         } catch (error) {
             console.error('Error updating password:', error);
-            throw new InternalServerErrorException('Failed to update password.');
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                message: 'Failed to update password.',
+            };
         }
     }
 
@@ -181,12 +214,16 @@ export class ProfileService {
                 select: { subscription_type: true },
             });
 
-            if (user.subscription_type === userSubscriptionReqDto.subscription) {
-                throw new BadRequestException('Already subscribed to this plan');
+            if (user.subscription_type === userSubscriptionReqDto.subscription_type) {
+                return {
+                    statusCode: HttpStatus.BAD_REQUEST,
+                    timestamp: new Date().toISOString(),
+                    message: 'Already subscribed to this plan.',
+                };
             }
 
             const prices = { Basic: 0, Premium: 1000 };
-            const amount = prices[userSubscriptionReqDto.subscription];
+            const amount = prices[userSubscriptionReqDto.subscription_type];
 
             // Uncomment and complete Stripe payment intent logic as needed
             /*
@@ -202,14 +239,18 @@ export class ProfileService {
 
             await this.prisma.user.update({
                 where: { user_id: userSubscriptionReqDto.user_id },
-                data: { subscription_type: userSubscriptionReqDto.subscription },
-                 // payment_intent_id: paymentIntent.id,
+                data: { subscription_type: userSubscriptionReqDto.subscription_type },
+                // payment_intent_id: paymentIntent.id,
             });
 
-            return { message: 'Subscription updated successfully' };
+            return { message: 'Subscription updated successfully'/*, paymentIntent*/ };
         } catch (error) {
             console.error('Error updating subscription:', error);
-            throw new InternalServerErrorException('Failed to update subscription.'/*, paymentIntent*/);
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                message: 'Failed to update subscription.',
+            };
         }
     }
 }

@@ -6,4 +6,4 @@ import { PrismaNetworkService } from './prisma-network.service';
   providers: [PrismaNetworkService],
   exports: [PrismaNetworkService],
 })
-export class PrismaLandModule {}
+export class PrismaNetworkModule {}

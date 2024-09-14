@@ -12,7 +12,7 @@ export class AuthController {
         return this.authService.register(authDto);
     }
 
-    @EventPattern('verify-register')
+    @EventPattern('register-verify')
     async verify(token: string) {
         return this.authService.verify(token);
     }

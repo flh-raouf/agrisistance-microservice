@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { ProfileDto, UserEmailReqDto, UserEmailVerifyReqDto, UserPasswordReqDto, UserSubscriptionReqDto } from './dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -10,7 +10,15 @@ export class ProfileService {
         @Inject('USER_SERVICE') private readonly userClient: ClientProxy, 
         private jwtService: JwtService,
         private config: ConfigService,
-    ) {}
+    ) {
+        this.userClient = ClientProxyFactory.create({
+            transport: Transport.TCP,
+            options: {
+                host: '127.0.0.1',
+                port: 3001, 
+            },
+        });
+    }
 
     async getProfile(user_id: string) {
         return this.userClient.send('getProfile', user_id);
@@ -19,11 +27,11 @@ export class ProfileService {
 
     async updateProfile(user_id: string, profileDto: ProfileDto) {
         profileDto.user_id = user_id;
-        return this.userClient.send('UpdateUser', profileDto);
+        return this.userClient.send('UpdateProfile', profileDto);
     }
 
     async deleteProfile(user_id: string) {
-        return this.userClient.send('DeleteUser', user_id);
+        return this.userClient.send('DeleteProfile', user_id);
     }
 
     async updateEmail(user_id: string, userEmailReqDto: UserEmailReqDto) {
@@ -49,7 +57,7 @@ export class ProfileService {
 
     async updateSubscription(user_id: string, userSubscriptionReqDto: UserSubscriptionReqDto){
         userSubscriptionReqDto.user_id = user_id
-        return this.userClient.send('UpdatePassword', userSubscriptionReqDto)
+        return this.userClient.send('UpdateSubscription', userSubscriptionReqDto)
     }
 
 }

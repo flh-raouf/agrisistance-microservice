@@ -1,6 +1,6 @@
 import { Controller } from "@nestjs/common";
 import { LandService } from "./land.service";
-import { LandDto, UserRequestDto } from "./dto";
+import { AddLandDto, UpdateLandDto, UserRequestDto } from "./dto";
 import { EventPattern } from "@nestjs/microservices";
 
 @Controller()
@@ -8,8 +8,8 @@ export class LandController {
     constructor(private landService: LandService) {}
 
     @EventPattern('AddLand')
-    async createLand(landDto: LandDto) {
-        return await this.landService.addLand(landDto);
+    async createLand(addLandDto: AddLandDto) {
+        return await this.landService.addLand(addLandDto);
     }
 
     @EventPattern('GetAllLands')
@@ -23,8 +23,8 @@ export class LandController {
     }
 
     @EventPattern('UpdateLand')
-    async updateLandEvent(landDto: LandDto) {
-        return await this.landService.updateLand(landDto);
+    async updateLandEvent(updateLandDto: UpdateLandDto) {
+        return await this.landService.updateLand(updateLandDto);
     }
 
     @EventPattern('DeleteLand')

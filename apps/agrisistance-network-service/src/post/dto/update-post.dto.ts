@@ -10,19 +10,19 @@ export class UpdatePostDto {
     user_id: string;
 
     @IsString()
-    @IsNotEmpty()
-    post_title: string;
+    @IsOptional()
+    post_title?: string;
 
     @IsString()
-    @IsNotEmpty()
-    post_content: string;
+    @IsOptional()
+    post_content?: string;
 
     @IsString()
     @IsOptional()
     post_image?: string;
 
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     @IsIn(['opportunitiesAndPartnership', 'businessPromotion', 'resourcesAndProducts' ])
-    post_type: string;
+    post_type?: string;
 }

@@ -12,7 +12,8 @@ async function bootstrap() {
     whitelist: true,
   }));
 
-  app.useGlobalFilters(new NotFoundFilter())
+  // app.useGlobalFilters(new NotFoundFilter())
+
 
   const port = process.env.PORT || 9090;
   await app.listen(port).then(() => {

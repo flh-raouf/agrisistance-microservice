@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { PrismaLandService } from '../.prisma/prisma-land.service';
 import fetch from 'node-fetch';
 
 
@@ -7,25 +6,10 @@ import fetch from 'node-fetch';
 @Injectable()
 export class ModelsService {
 
-    constructor( private prisma: PrismaLandService){}
+    constructor(){}
 
     // Generate business plan
     async generateBusinessPlan(user_id: string, land_id: string) {
-
-        // check if the user is the owner of the land
-        const landExists = await this.prisma.land.findFirst({
-            where: {
-                land_id,
-                user_id,
-            },
-        });
-
-        if (!landExists) {
-            throw new HttpException({
-                status: HttpStatus.NOT_FOUND,
-                error: 'Land not found for the user.',
-            }, HttpStatus.NOT_FOUND);
-        }
 
         const response = await fetch('http://localhost:8000/generate-business-plan', {
             method: 'POST',

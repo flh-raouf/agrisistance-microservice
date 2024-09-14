@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { CreatePostDto, ArchiveDeletePostDto, UpdatePostDto, GetPostByTypeDto } from './dto';
 
 @Injectable()
@@ -7,7 +7,15 @@ export class NetworkService {
 
     constructor(
         @Inject('NETWORK_SERVICE') private readonly networkClient: ClientProxy,
-    ) {}
+    ) {
+        this.networkClient = ClientProxyFactory.create({
+            transport: Transport.TCP,
+            options: {
+                host: '127.0.0.1',
+                port: 3003, 
+            },
+        });
+    }
 
 
     async createPost(user_id: string, createPostDto: CreatePostDto){
@@ -15,8 +23,9 @@ export class NetworkService {
         return this.networkClient.send('create-post', createPostDto);
     }
 
-    async updatePost(user_id: string, updatePostDto: UpdatePostDto){
+    async updatePost(user_id: string, post_id: string, updatePostDto: UpdatePostDto){
         updatePostDto.user_id = user_id;
+        updatePostDto.post_id = post_id;
         return this.networkClient.send('update-post', updatePostDto);
     }
 

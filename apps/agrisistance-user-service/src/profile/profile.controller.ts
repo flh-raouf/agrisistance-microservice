@@ -39,7 +39,7 @@ export class ProfileController {
         return this.profileService.updatePassword(userPasswordReqDto);
     }
 
-    @EventPattern('UpdateSubcription')
+    @EventPattern('UpdateSubscription')
     async updateSubcription(userSubscriptionReqDto: UserSubscriptionReqDto) {
         return this.profileService.updateSubscription(userSubscriptionReqDto);
     }

@@ -32,7 +32,12 @@ export class AuthService {
             });
 
             if (user) {
-                throw new BadRequestException('E-mail already exists');
+                return {
+                    statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                    timestamp: new Date().toISOString(),
+                    path: '/register',
+                    message: 'E-mail already in use.',
+                };;
             }
 
             const hashedPassword = await argon.hash(authDto.password);
@@ -68,7 +73,12 @@ export class AuthService {
             return { message: 'User created successfully. Please verify your account via the link sent by Email' };
         } catch (error) {
             console.error('Registration error:', error);
-            throw new InternalServerErrorException('Failed to register user.');
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                path: '/register',
+                message: 'Failed to register user.',
+            };
         }
     }
 
@@ -84,7 +94,12 @@ export class AuthService {
             return { message: 'Account verified successfully', token: realToken };
         } catch (error) {
             console.error('Verification error:', error);
-            throw new BadRequestException('Invalid verification token.');
+            return {
+                statusCode: HttpStatus.BAD_REQUEST,
+                timestamp: new Date().toISOString(),
+                path: '/verify',
+                message: 'Invalid verification token.',
+            };
         }
     }
 
@@ -95,17 +110,27 @@ export class AuthService {
             });
 
             if (!user) {
-                throw new NotFoundException('User not found');
+                return {
+                    statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                    timestamp: new Date().toISOString(),
+                    path: '/login',
+                    message: 'User not found.',
+                };
             }
 
             if (!await argon.verify(user.password, loginDto.password)) {
-                throw new BadRequestException('Invalid password');
+                return {
+                    statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                    timestamp: new Date().toISOString(),
+                    path: '/login',
+                    message: 'Password incorrect.',
+                };
             }
 
             if (!user.is_verified) {
                 const token = this.jwtService.sign({ user_id: user.user_id }, { expiresIn: '10m' });
                 await this.emailService.sendEmail(user.email, token, 'confirmation');
-                throw new BadRequestException('Please verify your account');
+                return { message: 'Please verify your account via the link sent by Email' };
             }
 
             if (user.is_2fa_enabled) {
@@ -152,7 +177,12 @@ export class AuthService {
             return { message: 'Logged in successfully', token };
         } catch (error) {
             console.error('Login error:', error);
-            throw new InternalServerErrorException('Failed to login.');
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                path: '/login',
+                message: 'Failed to login.',
+            };
         }
     }
 
@@ -170,11 +200,16 @@ export class AuthService {
 
 
              // Or caching using Redis
-            const secret_2fa = await this.cacheManager.get(verifyOtpDto.user_id)
+            const secret_2fa = await this.cacheManager.get(verifyOtpDto.user_id);
             
             // if (verifyOtpDto.otp !== user.secret_2fa) {
             if (verifyOtpDto.otp !== secret_2fa) {
-                throw new BadRequestException('Invalid OTP');
+                return {
+                    statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                    timestamp: new Date().toISOString(),
+                    path: '/verify-otp',
+                    message: 'OTP Incorrect.',
+                };
             }
 
             await this.prismaUser.user.update({
@@ -186,7 +221,12 @@ export class AuthService {
             return { message: 'OTP verified successfully', token };
         } catch (error) {
             console.error('OTP verification error:', error);
-            throw new InternalServerErrorException('Failed to verify OTP.');
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                path: '/verify-otp',
+                message: 'Failed to verify OTP.',
+            };
         }
     }
 
@@ -197,7 +237,12 @@ export class AuthService {
             });
 
             if (!user) {
-                throw new NotFoundException('User not found');
+                return {
+                    statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                    timestamp: new Date().toISOString(),
+                    path: '/forgot-password',
+                    message: 'User Not found',
+                };
             }
 
             const token = this.jwtService.sign({ user_id: user.user_id }, { expiresIn: '10m' });
@@ -206,7 +251,12 @@ export class AuthService {
             return { message: 'Password reset link sent to your email' };
         } catch (error) {
             console.error('Forgot password error:', error);
-            throw new InternalServerErrorException('Failed to send password reset link.');
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                path: '/forgot-password',
+                message: 'Failed to send password reset link.',
+            };
         }
     }
 
@@ -223,7 +273,12 @@ export class AuthService {
             return { message: 'Password reset successfully' };
         } catch (error) {
             console.error('Reset password error:', error);
-            throw new BadRequestException('Invalid reset token or failed to reset password.');
+            return {
+                statusCode: HttpStatus.BAD_REQUEST,
+                timestamp: new Date().toISOString(),
+                path: '/reset-password',
+                message: 'Invalid reset token or failed to reset password.',
+            };
         }
     }
 }

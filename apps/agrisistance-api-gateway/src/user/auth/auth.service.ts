@@ -1,12 +1,21 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { AuthDto, LoginDto, ResetPasswordDto, VerifyOtpDto } from './dto';
 
 @Injectable()
 export class AuthService {
+   
     constructor(
-        @Inject('USER_SERVICE') private readonly userClient: ClientProxy,
-    ) {}
+        @Inject('USER_SERVICE') private readonly userClient: ClientProxy, 
+    ) {
+        this.userClient = ClientProxyFactory.create({
+            transport: Transport.TCP,
+            options: {
+                host: '127.0.0.1',
+                port: 3001, 
+            },
+        });
+    }
 
 
     async register(authDto: AuthDto) {

@@ -1,10 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaNetworkService } from '../.prisma/prisma-network.service';
 import { CreatePostDto, ArchiveDeletePostDto, UpdatePostDto, GetPostByTypeDto } from './dto';
 import * as cloudinary from 'cloudinary';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { ConfigService } from '@nestjs/config';
-
 
 @Injectable()
 export class PostService {
@@ -22,7 +21,6 @@ export class PostService {
 
     async createPost(createPostDto: CreatePostDto) {
         try {
-            // Handle post image upload to Cloudinary
             if (createPostDto.post_image) {
                 const uploadResult = await cloudinary.v2.uploader.upload(createPostDto.post_image, {
                     folder: 'Agrisistance/Posts-Pictures',
@@ -30,41 +28,44 @@ export class PostService {
                 createPostDto.post_image = uploadResult.secure_url;
             }
 
-            await this.prisma.post.create({
+            const post = await this.prisma.post.create({
                 data: {
                     user_id: createPostDto.user_id,
                     post_title: createPostDto.post_title,
                     post_content: createPostDto.post_content,
                     post_type: createPostDto.post_type,
                     post_image: createPostDto.post_image,
-                }
+                },
             });
 
-            return { message: 'Post created successfully' };
+            return { message: 'Post created successfully', post_id: post.post_id };
         } catch (error) {
             console.error('Error creating post:', error);
-            throw new HttpException({
-                status: HttpStatus.INTERNAL_SERVER_ERROR,
-                error: 'An error occurred while creating the post.',
-            }, HttpStatus.INTERNAL_SERVER_ERROR);
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                path: '/createPost',
+                message: 'Failed to create post.',
+            };
         }
     }
 
     async updatePost(updatePostDto: UpdatePostDto) {
         try {
             const existingPost = await this.prisma.post.findUnique({
-                where: { post_id: updatePostDto.post_id },
+                where: { post_id: updatePostDto.post_id, user_id: updatePostDto.user_id },
             });
 
             if (!existingPost) {
-                throw new HttpException({
-                    status: HttpStatus.NOT_FOUND,
-                    error: 'Post not found for the user.',
-                }, HttpStatus.NOT_FOUND);
+                return {
+                    statusCode: HttpStatus.NOT_FOUND,
+                    timestamp: new Date().toISOString(),
+                    path: '/updatePost',
+                    message: 'Post not found for the user.',
+                };
             }
 
             if (updatePostDto.post_image) {
-                // Handle existing image deletion
                 const existingImage = await this.prisma.post.findUnique({
                     where: { post_id: updatePostDto.post_id },
                     select: { post_image: true },
@@ -77,7 +78,6 @@ export class PostService {
                     }
                 }
 
-                // Upload the new image
                 const uploadResult = await cloudinary.v2.uploader.upload(updatePostDto.post_image, {
                     folder: 'Agrisistance/Posts-Pictures',
                 });
@@ -97,10 +97,12 @@ export class PostService {
             return { message: 'Post updated successfully' };
         } catch (error) {
             console.error('Error updating post:', error);
-            throw new HttpException({
-                status: HttpStatus.INTERNAL_SERVER_ERROR,
-                error: 'An error occurred while updating the post.',
-            }, HttpStatus.INTERNAL_SERVER_ERROR);
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                path: '/updatePost',
+                message: 'Failed to update post.',
+            };
         }
     }
 
@@ -111,10 +113,12 @@ export class PostService {
             });
 
             if (!existingPost) {
-                throw new HttpException({
-                    status: HttpStatus.NOT_FOUND,
-                    error: 'Post not found for the user.',
-                }, HttpStatus.NOT_FOUND);
+                return {
+                    statusCode: HttpStatus.NOT_FOUND,
+                    timestamp: new Date().toISOString(),
+                    path: '/archivePost',
+                    message: 'Post not found for the user.',
+                };
             }
 
             await this.prisma.post.update({
@@ -125,10 +129,12 @@ export class PostService {
             return { message: 'Post archived successfully' };
         } catch (error) {
             console.error('Error archiving post:', error);
-            throw new HttpException({
-                status: HttpStatus.INTERNAL_SERVER_ERROR,
-                error: 'An error occurred while archiving the post.',
-            }, HttpStatus.INTERNAL_SERVER_ERROR);
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                path: '/archivePost',
+                message: 'Failed to archive post.',
+            };
         }
     }
 
@@ -139,10 +145,12 @@ export class PostService {
             });
 
             if (!existingPost) {
-                throw new HttpException({
-                    status: HttpStatus.NOT_FOUND,
-                    error: 'Post not found for the user.',
-                }, HttpStatus.NOT_FOUND);
+                return {
+                    statusCode: HttpStatus.NOT_FOUND,
+                    timestamp: new Date().toISOString(),
+                    path: '/deletePost',
+                    message: 'Post not found for the user.',
+                };
             }
 
             const existingImage = await this.prisma.post.findUnique({
@@ -164,10 +172,12 @@ export class PostService {
             return { message: 'Post deleted successfully' };
         } catch (error) {
             console.error('Error deleting post:', error);
-            throw new HttpException({
-                status: HttpStatus.INTERNAL_SERVER_ERROR,
-                error: 'An error occurred while deleting the post.',
-            }, HttpStatus.INTERNAL_SERVER_ERROR);
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                path: '/deletePost',
+                message: 'Failed to delete post.',
+            };
         }
     }
 
@@ -191,10 +201,12 @@ export class PostService {
             return myPosts;
         } catch (error) {
             console.error('Error fetching my posts:', error);
-            throw new HttpException({
-                status: HttpStatus.INTERNAL_SERVER_ERROR,
-                error: 'An error occurred while fetching the posts.',
-            }, HttpStatus.INTERNAL_SERVER_ERROR);
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                path: '/getMyPosts',
+                message: 'Failed to fetch posts.',
+            };
         }
     }
 
@@ -208,7 +220,7 @@ export class PostService {
             const seenPostIds = seenPosts.map((seenPost) => seenPost.post_id);
 
             const posts = await this.prisma.post.findMany({
-                where: { post_id: { notIn: seenPostIds } },
+                where: { post_id: { notIn: seenPostIds } , is_active: true },
                 take: 30,
                 include: {
                     user: {
@@ -231,10 +243,12 @@ export class PostService {
             return posts;
         } catch (error) {
             console.error('Error fetching all posts:', error);
-            throw new HttpException({
-                status: HttpStatus.INTERNAL_SERVER_ERROR,
-                error: 'An error occurred while fetching all posts.',
-            }, HttpStatus.INTERNAL_SERVER_ERROR);
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                path: '/getAllPosts',
+                message: 'Failed to fetch all posts.',
+            };
         }
     }
 
@@ -250,7 +264,7 @@ export class PostService {
             const seenPostIds = seenPosts.map((seenPost) => seenPost.post_id);
 
             const posts = await this.prisma.post.findMany({
-                where: { post_type: post_type, post_id: { notIn: seenPostIds } },
+                where: { post_type: post_type, post_id: { notIn: seenPostIds } , is_active: true },
                 take: 30,
                 include: {
                     user: {
@@ -273,10 +287,12 @@ export class PostService {
             return posts;
         } catch (error) {
             console.error('Error fetching posts by type:', error);
-            throw new HttpException({
-                status: HttpStatus.INTERNAL_SERVER_ERROR,
-                error: 'An error occurred while fetching posts by type.',
-            }, HttpStatus.INTERNAL_SERVER_ERROR);
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                path: '/get-post-by-type',
+                message: 'An error occurred while fetching posts by type.',
+            };
         }
     }
 }

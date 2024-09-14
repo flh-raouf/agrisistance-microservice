@@ -9,7 +9,7 @@ export class UserSubscriptionReqDto {
     @IsIn(['Basic', 'Premium'], {
         message: 'Subscription type must be either Premium or Basic',
     })
-    subscription: string;
+    subscription_type: string;
 
     @IsString()
     @IsNotEmpty()

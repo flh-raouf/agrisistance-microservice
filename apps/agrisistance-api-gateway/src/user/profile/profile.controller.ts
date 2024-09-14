@@ -5,17 +5,12 @@ import { JwtDecorator } from "../../.decorator";
 import { ProfileDto, UserEmailReqDto, UserPasswordReqDto, UserSubscriptionReqDto } from "./dto";
 
 
-@UseGuards(JwtGuard)
 @Controller('profile')
 export class ProfileController {
     constructor(private readonly profileService: ProfileService) {}
 
-    // Hello World
-    @Get()
-    ProfileServiceHello( ) {
-        return 'User Service';
-    }
-
+    
+    @UseGuards(JwtGuard)
     @Get('get-profile')
     @HttpCode(HttpStatus.OK)
     async getProfile(
@@ -24,6 +19,8 @@ export class ProfileController {
       return this.profileService.getProfile(user_id);
     }
 
+    
+    @UseGuards(JwtGuard)
     @Put('edit-profile')
     @HttpCode(HttpStatus.OK)
     async updateProfile(
@@ -33,6 +30,7 @@ export class ProfileController {
       return this.profileService.updateProfile(user_id, profileDto);
     }
 
+    @UseGuards(JwtGuard)
     @Delete('delete-profile')
     @HttpCode(HttpStatus.OK)
     async deleteProfile(
@@ -41,6 +39,8 @@ export class ProfileController {
       return this.profileService.deleteProfile(user_id);
     }
 
+    
+    @UseGuards(JwtGuard)
     @Put('update-email')
     @HttpCode(HttpStatus.ACCEPTED)
     async updateEmail(
@@ -59,6 +59,8 @@ export class ProfileController {
       return this.profileService.veirfyUpdateEmail(token);
     }
 
+    
+    @UseGuards(JwtGuard)
     @Put('update-password')
     @HttpCode(HttpStatus.OK)
     async updatePassword(
@@ -68,6 +70,7 @@ export class ProfileController {
       return this.profileService.updatePassword(user_id, userPasswordReqDto);
     }
 
+    @UseGuards(JwtGuard)
     @Put('update-subscription')
     @HttpCode(HttpStatus.OK)
     async updateSubcription(

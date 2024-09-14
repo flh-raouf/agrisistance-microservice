@@ -1,7 +1,7 @@
 import { ForbiddenException, HttpException, HttpStatus } from "@nestjs/common";
 import { Injectable } from "@nestjs/common";
 import { PrismaLandService } from "../.prisma/prisma-land.service";
-import { LandDto, UserRequestDto } from "./dto";
+import { AddLandDto, UpdateLandDto, UserRequestDto } from "./dto";
 import { ConfigService } from "@nestjs/config";
 import * as cloudinary from 'cloudinary';
 import fetch from 'node-fetch';
@@ -23,19 +23,19 @@ export class LandService {
         });
     }
 
-    async addLand(landDto: LandDto) {
+    async addLand(addlandDto: AddLandDto) {
 
         // Upload image to Cloudinary if it exists
-        if (landDto.land_image) {
-            const uploadResult = await cloudinary.v2.uploader.upload(landDto.land_image, {
+        if (addlandDto.land_image) {
+            const uploadResult = await cloudinary.v2.uploader.upload(addlandDto.land_image, {
              folder: 'Agrisistance/Land-Pictures',
             });
-            landDto.land_image = uploadResult.secure_url;
+            addlandDto.land_image = uploadResult.secure_url;
         }
 
 
         // Get weather data from Tomorrow.io API
-        const locationURL = `https://api.tomorrow.io/v4/weather/realtime?location=${landDto.latitude},${landDto.longitude}&units=metric&apikey=${this.configService.get('TOMMOROW_API_KEY')}`;
+        const locationURL = `https://api.tomorrow.io/v4/weather/realtime?location=${addlandDto.latitude},${addlandDto.longtitude}&units=metric&apikey=${this.configService.get('TOMMOROW_API_KEY')}`;
         const options = {
           method: 'GET',
           headers: {
@@ -51,17 +51,17 @@ export class LandService {
         try{
             const land = await this.prisma.land.create({
                 data: {
-                    latitude: landDto.latitude,
-                    longitude: landDto.longitude,
-                    land_size: landDto.land_size,
-                    land_name: landDto.land_name,
-                    land_image: landDto.land_image,
-                    ph_level: landDto.ph_level,
-                    phosphorus: landDto.phosphorus,
-                    potassium: landDto.potassium,
-                    oxygen_level: landDto.oxygen_level,
-                    nitrogen: landDto.nitrogen,
-                    user_id: landDto.user_id,
+                    latitude: addlandDto.latitude,
+                    longitude: addlandDto.longtitude,
+                    land_size: addlandDto.land_size,
+                    land_name: addlandDto.land_name,
+                    land_image: addlandDto.land_image,
+                    ph_level: addlandDto.ph_level,
+                    phosphorus: addlandDto.phosphorus,
+                    potassium: addlandDto.potassium,
+                    oxygen_level: addlandDto.oxygen_level,
+                    nitrogen: addlandDto.nitrogen,
+                    user_id: addlandDto.user_id,
                 },
                 select: {
                     land_id: true,
@@ -75,7 +75,7 @@ export class LandService {
 
             await this.prisma.finance.create({
                 data: {
-                  investment_amount: landDto.budget,
+                  investment_amount: addlandDto.budget,
                   land_id: land.land_id,
                 },
             });
@@ -94,24 +94,26 @@ export class LandService {
             return { message: 'Land added successfully', land_id: land.land_id };
 
         } catch (error) {
+            console.error('Error adding land:', error);
 
             // Check if the error is due to a duplicate land from Prisma
             if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
-                
-                throw new ForbiddenException(
-                  'Land with the same coordinates already exists ',
-                );
+                return {
+                    statusCode: HttpStatus.FORBIDDEN,
+                    timestamp: new Date().toISOString(),
+                    path: '/add-land',
+                    message: 'Land with the same coordinates already exists.',
+                };
             }
-              
-            // Log the error and throw an exception
-            console.error('Error adding land:', error);
-            throw new HttpException({
-                status: HttpStatus.INTERNAL_SERVER_ERROR,
-                error: 'An error occurred while adding the land.',
-            }, HttpStatus.INTERNAL_SERVER_ERROR);
+
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                path: '/add-land',
+                message: 'An error occurred while adding the land.',
+            };
         }
     }
-
 
     async getAllLands(user_id: string) {
 
@@ -144,101 +146,97 @@ export class LandService {
             return lands;
 
         } catch (error) {
-            // Log the error and throw an exception
             console.error('Error fetching lands:', error);
-            throw new HttpException({
-                status: HttpStatus.INTERNAL_SERVER_ERROR,
-                error: 'An error occurred while fetching lands.',
-            }, HttpStatus.INTERNAL_SERVER_ERROR);
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                path: '/get-all-lands',
+                message: 'An error occurred while fetching lands.',
+            };
         }
 
     }
 
     async getLandById(userRequestDto: UserRequestDto) {
             
-            try{
-                // Check if land exists for the user
-                const landExists = await this.prisma.land.findFirst({
-                    where: {
-                        land_id: userRequestDto.land_id,
-                        user_id: userRequestDto.user_id,
-                    },
-                });
-
-                if (!landExists) {
-                    throw new HttpException({
-                        status: HttpStatus.NOT_FOUND,
-                        error: 'Land not found for the user.',
-                    }, HttpStatus.NOT_FOUND);
-                }
-
-                // Fetch the land and related data
-                const [land, weather, cropTypes, landStatistics, cropMaintenance, finance, businessPlan] = await Promise.all([
-                    this.prisma.land.findFirst({
-                      where: {
-                        land_id: userRequestDto.land_id,
-                        user_id: userRequestDto.user_id,
-                      },
-                    }),
-                    this.prisma.weather.findMany({
-                      where: { land_id: userRequestDto.land_id },
-                    }),
-                    this.prisma.crop.findMany({
-                      where: { land_id: userRequestDto.land_id },
-                    }),
-                    this.prisma.landStatistic.findMany({
-                      where: { land_id: userRequestDto.land_id },
-                    }),
-                    this.prisma.cropMaintenance.findMany({
-                      where: { land_id: userRequestDto.land_id },
-                    }),
-                    this.prisma.finance.findMany({
-                      where: { land_id: userRequestDto.land_id },
-                    }),
-                    this.prisma.businessPlan.findMany({
-                      where: { land_id: userRequestDto.land_id },
-                    }),
-                ]);
-
-                // Check if the land was not found
-                if (!land) {
-                  throw new HttpException({
+        try{
+            // Check if land exists for the user
+            const landExists = await this.prisma.land.findFirst({
+                where: {
+                    land_id: userRequestDto.land_id,
+                    user_id: userRequestDto.user_id,
+                },
+            });
+            if (!landExists) {
+                throw new HttpException({
                     status: HttpStatus.NOT_FOUND,
                     error: 'Land not found for the user.',
-                  }, HttpStatus.NOT_FOUND);
-                }
-
-                // Return the land and related data
-                return {
-                  crops: cropTypes,
-                  land,
-                  crop_maintenance: cropMaintenance,
-                  weather,
-                  land_statistics: landStatistics,
-                  finance,
-                  business_plan: businessPlan,
-                } 
-    
-            } catch (error) {
-                // Log the error and throw an exception
-                console.error('Error fetching land:', error);
-                throw new HttpException(
-                {
-                    status: HttpStatus.INTERNAL_SERVER_ERROR,
-                    error: 'An error occurred while fetching the land.',
-                }, 
-                HttpStatus.INTERNAL_SERVER_ERROR);
+                }, HttpStatus.NOT_FOUND);
             }
+            // Fetch the land and related data
+            const [land, weather, cropTypes, landStatistics, cropMaintenance, finance, businessPlan] = await Promise.all([
+                this.prisma.land.findFirst({
+                  where: {
+                    land_id: userRequestDto.land_id,
+                    user_id: userRequestDto.user_id,
+                  },
+                }),
+                this.prisma.weather.findMany({
+                  where: { land_id: userRequestDto.land_id },
+                }),
+                this.prisma.crop.findMany({
+                  where: { land_id: userRequestDto.land_id },
+                }),
+                this.prisma.landStatistic.findMany({
+                  where: { land_id: userRequestDto.land_id },
+                }),
+                this.prisma.cropMaintenance.findMany({
+                  where: { land_id: userRequestDto.land_id },
+                }),
+                this.prisma.finance.findMany({
+                  where: { land_id: userRequestDto.land_id },
+                }),
+                this.prisma.businessPlan.findMany({
+                  where: { land_id: userRequestDto.land_id },
+                }),
+            ]);
+            // Check if the land was not found
+            if (!land) {
+              throw new HttpException({
+                status: HttpStatus.NOT_FOUND,
+                error: 'Land not found for the user.',
+              }, HttpStatus.NOT_FOUND);
+            }
+            // Return the land and related data
+            return {
+              crops: cropTypes,
+              land,
+              crop_maintenance: cropMaintenance,
+              weather,
+              land_statistics: landStatistics,
+              finance,
+              business_plan: businessPlan,
+            } 
+
+        } catch (error) {
+            console.error('Error fetching land:', error);
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                path: '/get-land-by-id',
+                message: 'An error occurred while fetching the land.',
+            };
+        }
     }
     
-    async updateLand(landDto: LandDto) {
+    async updateLand(updateLandDto: UpdateLandDto) {
 
         try{
             // Check if land exists for the user
             const landExists = await this.prisma.land.findFirst({
                 where: {
-                    land_id: landDto.land_id,
-                    user_id: landDto.user_id,
+                    land_id: updateLandDto.land_id,
+                    user_id: updateLandDto.user_id,
                 },
             });
 
@@ -250,10 +248,10 @@ export class LandService {
             }
 
             // Check if there is an image to update
-            if (landDto.land_image) {
+            if (updateLandDto.land_image) {
                 // Fetch the existing land image
                 const existingLand = await this.prisma.land.findUnique({
-                  where: { land_id: landDto.land_id },
+                  where: { land_id: updateLandDto.land_id },
                   select: { land_image: true },
                 });
             
@@ -265,71 +263,77 @@ export class LandService {
                   }
                 }
                 // Upload the new image to Cloudinary
-                const uploadResult = await cloudinary.v2.uploader.upload(landDto.land_image, {
+                const uploadResult = await cloudinary.v2.uploader.upload(updateLandDto.land_image, {
                     folder: 'Agrisistance/Land-Pictures',
                 });
-                landDto.land_image = uploadResult.secure_url;
+                updateLandDto.land_image = uploadResult.secure_url;
             } 
 
             // Update land data in the database
             await this.prisma.land.update({
-                where: { land_id: landDto.land_id },
+                where: { land_id: updateLandDto.land_id },
                 data: {
-                    latitude : landDto.latitude,
-                    longitude: landDto.longitude,
-                    land_size: landDto.land_size,
-                    land_name: landDto.land_name,
-                    land_image: landDto.land_image,
-                    ph_level: landDto.ph_level,
-                    phosphorus: landDto.phosphorus,
-                    potassium: landDto.potassium,
-                    oxygen_level: landDto.oxygen_level,
-                    nitrogen: landDto.nitrogen,
+                    latitude : updateLandDto.latitude,
+                    longitude: updateLandDto.longtitude,
+                    land_size: updateLandDto.land_size,
+                    land_name: updateLandDto.land_name,
+                    land_image: updateLandDto.land_image,
+                    ph_level: updateLandDto.ph_level,
+                    phosphorus: updateLandDto.phosphorus,
+                    potassium: updateLandDto.potassium,
+                    oxygen_level: updateLandDto.oxygen_level,
+                    nitrogen: updateLandDto.nitrogen,
                 },
             });
 
             await this.prisma.finance.update({
-                where: { land_id: landDto.land_id },
-                data: { investment_amount: landDto.budget },
+                where: { land_id: updateLandDto.land_id },
+                data: { investment_amount: updateLandDto.budget },
             });
         
             await this.prisma.weather.update({
-                where: { land_id: landDto.land_id },
-                data: { humidity: landDto.humidity },
+                where: { land_id: updateLandDto.land_id },
+                data: { humidity: updateLandDto.humidity },
             });
 
             // Call the external service to generate a business plan
-            const response = await fetch(
-                'http://localhost:8000/generate-business-plan',
-                {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ land_id: landDto.land_id }),
-                }
-            );
+            // const response = await fetch(
+            //     'http://localhost:8000/generate-business-plan',
+            //     {
+            //       method: 'POST',
+            //       headers: { 'Content-Type': 'application/json' },
+            //       body: JSON.stringify({ land_id: updateLandDto.land_id }),
+            //     }
+            // );
 
-            const businessPlan = await response.json();
+            // const businessPlan = await response.json();
 
             return {
                 message: 'Land updated successfully',
-                land_id: landDto.land_id,
-                businessplan: businessPlan,
+                land_id: updateLandDto.land_id,
+                // businessplan: businessPlan,
             };
 
 
         } catch (error) {
-            // Log the error and throw an exception
-            if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
-                throw new HttpException({
-                    status: HttpStatus.NOT_FOUND,
-                    error: 'Land not found for the user.',
-                }, HttpStatus.NOT_FOUND);
+            console.error('Error updating land:', error);
+
+            // Check if the error is a Prisma client known request error
+            if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
+                return {
+                    statusCode: HttpStatus.FORBIDDEN,
+                    timestamp: new Date().toISOString(),
+                    path: '/update-land',
+                    message: 'Land with the same coordinates already exists.',
+                };
             }
-            console.error('Error fetching lands:', error);
-            throw new HttpException({
-                status: HttpStatus.INTERNAL_SERVER_ERROR,
-                error: 'An error occurred while fetching lands.',
-            }, HttpStatus.INTERNAL_SERVER_ERROR);
+
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                path: '/update-land',
+                message: 'An error occurred while updating the land.',
+            };
         }
     }
 
@@ -379,18 +383,24 @@ export class LandService {
             return { message: 'Land deleted successfully' }
         
         } catch (error) {
-            // Log the error and throw an exception
             console.error('Error deleting land:', error);
-            if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
-                throw new HttpException({
-                    status: HttpStatus.NOT_FOUND,
-                    error: 'Land not found for the user.',
-                }, HttpStatus.NOT_FOUND);
+
+            // Check if the error is a Prisma client known request error
+            if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
+                return {
+                    statusCode: HttpStatus.FORBIDDEN,
+                    timestamp: new Date().toISOString(),
+                    path: '/delete-land',
+                    message: 'Land with the same coordinates already exists.',
+                };
             }
-            throw new HttpException({
-                status: HttpStatus.INTERNAL_SERVER_ERROR,
-                error: 'An error occurred while deleting the land.',
-            }, HttpStatus.INTERNAL_SERVER_ERROR);
+
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                path: '/delete-land',
+                message: 'An error occurred while deleting the land.',
+            };
         }
     }
 }
