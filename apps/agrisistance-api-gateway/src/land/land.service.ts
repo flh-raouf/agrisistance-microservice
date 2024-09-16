@@ -13,8 +13,8 @@ export class LandService {
         this.landClient = ClientProxyFactory.create({
             transport: Transport.TCP,
             options: {
-                host: '127.0.0.1',
-                port: 3002, 
+                host: process.env.LAND_HOST || '0.0.0.0',
+                port: Number(process.env.LAND_PORT) || 9092, 
             },
         });
     }

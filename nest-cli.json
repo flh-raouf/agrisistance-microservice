@@ -1,24 +1,15 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "apps/agrisistance-land-service/src",
+  "sourceRoot": "apps/agrisistance-api-gateway/src",
   "compilerOptions": {
     "deleteOutDir": true,
     "webpack": true,
-    "tsConfigPath": "apps/agrisistance-land-service/tsconfig.app.json"
+    "tsConfigPath": "apps/agrisistance-api-gateway/tsconfig.app.json"
   },
   "monorepo": true,
-  "root": "apps/agrisistance-land-service",
+  "root": "apps/agrisistance-api-gateway",
   "projects": {
-    "agrisistance-land-service": {
-      "type": "application",
-      "root": "apps/agrisistance-land-service",
-      "entryFile": "main",
-      "sourceRoot": "apps/agrisistance-land-service/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/agrisistance-land-service/tsconfig.app.json"
-      }
-    },
     "agrisistance-api-gateway": {
       "type": "application",
       "root": "apps/agrisistance-api-gateway",
@@ -26,6 +17,15 @@
       "sourceRoot": "apps/agrisistance-api-gateway/src",
       "compilerOptions": {
         "tsConfigPath": "apps/agrisistance-api-gateway/tsconfig.app.json"
+      }
+    },
+    "agrisistance-land-service": {
+      "type": "application",
+      "root": "apps/agrisistance-land-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/agrisistance-land-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/agrisistance-land-service/tsconfig.app.json"
       }
     },
     "agrisistance-user-service": {

@@ -11,8 +11,8 @@ async function bootstrap() {
     {
       transport: Transport.TCP,
       options: {
-        host: '127.0.0.1',
-        port: 3002,
+        host: process.env.LAND_HOST || '0.0.0.0',
+        port: Number(process.env.KAND_PORT) || 9092,
       },
     },
   );

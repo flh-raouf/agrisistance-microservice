@@ -80,9 +80,9 @@ Before you begin, ensure you have the following installed:
     POSTGRES_USER_DB="agrisistance_user_db"
     POSTGRES_NETWORK_DB="agrisistance_network_db"
 
-    DATABASE_LAND_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:5434/${POSTGRES_LAND_DB}?schema=public'
-    DATABASE_USER_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:5435/${POSTGRES_USER_DB}?schema=public'
-    DATABASE_NETWORK_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:5436/${POSTGRES_NETWORK_DB}?schema=public'
+    DATABASE_LAND_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@0.0.0.0:5434/${POSTGRES_LAND_DB}?schema=public'
+    DATABASE_USER_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@0.0.0.0:5435/${POSTGRES_USER_DB}?schema=public'
+    DATABASE_NETWORK_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@0.0.0.0:5436/${POSTGRES_NETWORK_DB}?schema=public'
 
     REDIS_HOST = "localhost"
     REDIS_PORT = 6380

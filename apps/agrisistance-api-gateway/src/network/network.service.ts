@@ -11,8 +11,8 @@ export class NetworkService {
         this.networkClient = ClientProxyFactory.create({
             transport: Transport.TCP,
             options: {
-                host: '127.0.0.1',
-                port: 3003, 
+                host: process.env.NETWORK_HOST || '0.0.0.0',
+                port: Number(process.env.NETWORK_PORT) || 9093, 
             },
         });
     }
