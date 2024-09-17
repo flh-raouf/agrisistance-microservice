@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  agrisistance-land-db:
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'root'
+      POSTGRES_DB: 'agrisistance_land_db'
+    networks:
+      - agrisistance-network
+
+  agrisistance-user-db:
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'root'
+      POSTGRES_DB: 'agrisistance_user_db'
+    networks:
+      - agrisistance-network
+
+  agrisistance-network-db:
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5436:5432"
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'root'
+      POSTGRES_DB: 'agrisistance_network_db'
+    networks:
+      - agrisistance-network
+
+  agrisistance-redis-cache:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6380:6379"
+    networks:
+      - agrisistance-network
+
+  prisma-migrations:
+    image: node:20
+    volumes:
+      - .:/app
+    working_dir: /app
+    networks:
+      - agrisistance-network
+    command: >
+      sh -c "
+        npx prisma migrate deploy --schema=./apps/agrisistance-user-service/prisma/schema.user.prisma &&
+        npx prisma migrate deploy --schema=./apps/agrisistance-land-service/prisma/schema.land.prisma &&
+        npx prisma migrate deploy --schema=./apps/agrisistance-network-service/prisma/schema.network.prisma &&
+        npx prisma generate --schema=./apps/agrisistance-user-service/prisma/schema.user.prisma &&
+        npx prisma generate --schema=./apps/agrisistance-user-service/prisma/schema.land.prisma &&
+        npx prisma generate --schema=./apps/agrisistance-user-service/prisma/schema.network.prisma &&
+        npx prisma generate --schema=./apps/agrisistance-land-service/prisma/schema.land.prisma &&
+        npx prisma generate --schema=./apps/agrisistance-network-service/prisma/schema.network.prisma      
+      "
+
+  
+  agrisistance-api-gateway:
+    build:
+      image: agrisistancecontainerregistry.azurecr.io/agrisistanceapigateway:v1.0
+    restart: always
+    ports:
+      - 9090:9090
+    networks:
+      - agrisistance-network
+
+
+  agrisistance-user-service:
+    build:
+      image: agrisistancecontainerregistry.azurecr.io/agrisistanceuserservice:v1.0
+    restart: always
+    ports:
+      - 9091:9091
+    networks:
+      - agrisistance-network
+
+
+  agrisistance-land-service:
+    build:
+      image: agrisistancecontainerregistry.azurecr.io/agrisistancelandservice:v1.0
+    restart: always
+    ports:
+      - 9092:9092
+      - 5556:5555
+    networks:
+      - agrisistance-network
+
+
+  agrisistance-network-service:
+    build:
+      image: agrisistancecontainerregistry.azurecr.io/agrisistancenetworkservice:v1.0
+    restart: always
+    ports:
+      - 9093:9093
+    networks:
+      - agrisistance-network
+networks:
+  agrisistance-network:
+    driver: bridge

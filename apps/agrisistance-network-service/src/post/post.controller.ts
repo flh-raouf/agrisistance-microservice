@@ -23,6 +23,11 @@ export class PostController {
         return await this.postService.archivePost(archivePostDto);
     }
 
+    @EventPattern('unarchive-post')
+    async unarchivePost(unarchivePostDto: ArchiveDeletePostDto) {
+        return await this.postService.unarchivePost(unarchivePostDto);
+    }
+
     @EventPattern('delete-post')
     async deletePost(deletePostDto: ArchiveDeletePostDto) {
         return await this.postService.deletePost(deletePostDto);

@@ -138,6 +138,40 @@ export class PostService {
         }
     }
 
+
+    async unarchivePost(unarchivePostDto: ArchiveDeletePostDto) {
+        try {
+            const existingPost = await this.prisma.post.findUnique({
+                where: { post_id: unarchivePostDto.post_id },
+            });
+
+            if (!existingPost) {
+                return {
+                    statusCode: HttpStatus.NOT_FOUND,
+                    timestamp: new Date().toISOString(),
+                    path: '/archivePost',
+                    message: 'Post not found for the user.',
+                };
+            }
+
+            await this.prisma.post.update({
+                where: { post_id: unarchivePostDto.post_id },
+                data: { is_active: true },
+            });
+
+            return { message: 'Post unarchived successfully' };
+        } catch (error) {
+            console.error('Error archiving post:', error);
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                path: '/archivePost',
+                message: 'Failed to unarchive post.',
+            };
+        }
+    }
+                
+
     async deletePost(deletePostDto: ArchiveDeletePostDto) {
         try {
             const existingPost = await this.prisma.post.findUnique({

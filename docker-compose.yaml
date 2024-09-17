@@ -3,7 +3,7 @@ version: '3.8'
 services:
   
   agrisistance-land-db:
-    image: postgres:13
+    image: postgres:latest
     restart: always
     ports:
       - "5434:5432"
@@ -20,7 +20,7 @@ services:
       retries: 5
 
   agrisistance-user-db:
-    image: postgres:13
+    image: postgres:latest
     restart: always
     ports:
       - "5435:5432"
@@ -37,7 +37,7 @@ services:
       retries: 5
 
   agrisistance-network-db:
-    image: postgres:13
+    image: postgres:latest
     restart: always
     ports:
       - "5436:5432"
@@ -55,7 +55,7 @@ services:
 
 
   agrisistance-redis-cache:
-    image: redis:alpine
+    image: redis:latest
     restart: always
     ports:
       - "6380:6379"
@@ -63,7 +63,7 @@ services:
       - agrisistance-network
 
   prisma-migrations:
-    image: node:16
+    image: node:20
     depends_on:
       agrisistance-user-db:
         condition: service_healthy
@@ -83,7 +83,7 @@ services:
         npx prisma migrate deploy --schema=./apps/agrisistance-network-service/prisma/schema.network.prisma       
       "
   prisma-generations:
-    image: node:16
+    image: node:20
     depends_on:
       agrisistance-user-db:
         condition: service_healthy
@@ -110,11 +110,11 @@ services:
     build:
       context: .
       dockerfile: ./apps/agrisistance-api-gateway/Dockerfile
-    depends_on:
-      prisma-migrations:
-        condition: service_completed_successfully
-      prisma-generations:
-        condition: service_completed_successfully
+    # depends_on:
+    #   prisma-migrations:
+    #     condition: service_completed_successfully
+    #   prisma-generations:
+    #     condition: service_completed_successfully
     restart: always
     ports:
       - ${PORT}:${PORT}
@@ -126,9 +126,9 @@ services:
     build:
       context: .
       dockerfile: ./apps/agrisistance-user-service/Dockerfile
-    depends_on:
-      prisma-migrations:
-        condition: service_completed_successfully
+    # depends_on:
+    #   prisma-migrations:
+    #     condition: service_completed_successfully
     restart: always
     ports:
       - ${USER_PORT}:${USER_PORT}
@@ -141,9 +141,9 @@ services:
     build:
       context: .
       dockerfile: ./apps/agrisistance-land-service/Dockerfile
-    depends_on:
-      prisma-migrations:
-        condition: service_completed_successfully
+    # depends_on:
+    #   prisma-migrations:
+    #     condition: service_completed_successfully
     restart: always
     ports:
       - ${LAND_PORT}:${LAND_PORT}
@@ -156,9 +156,9 @@ services:
     build:
       context: .
       dockerfile: ./apps/agrisistance-network-service/Dockerfile
-    depends_on:
-      prisma-migrations:
-        condition: service_completed_successfully
+    # depends_on:
+    #   prisma-migrations:
+    #     condition: service_completed_successfully
     restart: always
     ports:
       - ${NETWORK_PORT}:${NETWORK_PORT}
@@ -166,6 +166,7 @@ services:
     networks:
       - agrisistance-network
     command: npm run start:dev agrisistance-network-service
+    
 
 networks:
   agrisistance-network:

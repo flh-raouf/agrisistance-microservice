@@ -7,6 +7,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ProfileModule } from './user/profile/profile.module';
 import { AuthModule } from './user/auth/auth.module';
 import { NetworkModule } from './network/network.module';
+import { ApiGatewayController } from './api-gateway.controller';
 
 @Module({
   imports: [ 
@@ -24,5 +25,6 @@ import { NetworkModule } from './network/network.module';
     provide: APP_GUARD,
     useClass: ThrottlerGuard,
   }],
+  controllers: [ApiGatewayController],
 })
 export class ApiGatewayModule {}
