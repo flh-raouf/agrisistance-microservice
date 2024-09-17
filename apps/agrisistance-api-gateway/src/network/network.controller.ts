@@ -41,6 +41,15 @@ export class NetworkController {
         return this.networkService.archivePost(user_id, archivePostDto);
     }
 
+    @Patch('unarchive-post')
+    @HttpCode(HttpStatus.OK)
+    async unarchivePost(
+        @Body() unarchivePostDto: ArchiveDeletePostDto,
+        @JwtDecorator('user_id') user_id: string,
+    ){
+        return this.networkService.unarchivePost(user_id, unarchivePostDto);
+    }
+
 
     @Delete('delete-post')
     @HttpCode(HttpStatus.OK)

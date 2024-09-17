@@ -34,6 +34,11 @@ export class NetworkService {
         return this.networkClient.send('archive-post', archivePostDto);
     }
 
+    async unarchivePost(user_id: string, unarchivePostDto: ArchiveDeletePostDto){
+        unarchivePostDto.user_id = user_id;
+        return this.networkClient.send('unarchive-post', unarchivePostDto);
+    }
+
 
     async deletePost(user_id: string, deletePostDto: ArchiveDeletePostDto){
         deletePostDto.user_id = user_id;
