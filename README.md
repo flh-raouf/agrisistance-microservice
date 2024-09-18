@@ -52,13 +52,13 @@ Before you begin, ensure you have the following installed:
 1. **Clone the repository**: Open your terminal or command prompt and run the following command:
 
     ```bash
-    git clone https://github.com/AGRISISTANCE/Agrisistance-Backend.git
+    git clone https://github.com/flh-raouf/agrisistance-microservice.git
     ```
 
 2. **Navigate to the project directory**:
 
     ```bash
-    cd Agrisistance-Backend
+    cd agrisistance-microservice
     ```
 
 ## Installing Dependencies
@@ -315,7 +315,7 @@ Before you begin, ensure you have the following installed:
 
 6. **Run the Flask Microservice**:
 
-    - The Flask microservice handles AI models. You can find the repository [here](https://github.com/AGRISISTANCE/Agrisistance-Model-Backend).
+    - The Flask microservice handles AI models. You can find the repository [here](https://github.com/flh-raouf/agrisistance-model-microservice).
 
 
  ## Postman Documentation
