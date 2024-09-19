@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { JwtStrategy } from "../.strategy/jwt.strategy";
 import { ConfigModule } from "@nestjs/config";
-import { NetworkController } from './network.controller';
-import { NetworkService } from './network.service';
+import { NetworkController } from './post.controller';
+import { NetworkService } from './post.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
 

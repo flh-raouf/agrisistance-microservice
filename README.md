@@ -5,8 +5,34 @@
 </p>
 
 # 🌱 AGRISISTANCE
+  **A2SV-Agrisistance** is an AI-driven web application aimed at helping African farmers optimize land use and boost crop productivity. Utilizing advanced machine learning algorithms and data analytics, AGRISISTANCE offers actionable insights and personalized recommendations tailored to individual farming needs.
 
-**A2SV-Agrisistance** is an AI-driven web application aimed at helping African farmers optimize land use and boost crop productivity. Utilizing advanced machine learning algorithms and data analytics, AGRISISTANCE offers actionable insights and personalized recommendations tailored to individual farming needs.
+# Table of Contents
+
+- [🌱 AGRISISTANCE](#-agristance)
+- [Features](#features)
+  - [Optimizing Land Use](#optimizing-land-use)
+  - [Boosting Crop Productivity](#boosting-crop-productivity)
+  - [Business Planning](#business-planning)
+  - [Resource Management](#resource-management)
+  - [Networking and Industrial Connections](#networking-and-industrial-connections)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Cloning the Repository](#cloning-the-repository)
+  - [Installing Dependencies](#installing-dependencies)
+  - [Setting Up Environment Variables](#setting-up-environment-variables)
+    - [Google Authentication and Email Sending Setup](#google-authentication-and-email-sending-setup)
+- [Running the Application](#running-the-application)
+  - [Scenario 1: Using Docker Compose for Full Setup](#scenario-1-using-docker-compose-for-full-setup)
+  - [Scenario 2: Using Docker for Databases Only, Manual Migrations and Services](#scenario-2-using-docker-for-databases-only-manual-migrations-and-services)
+  - [Scenario 3: Running the Application Without Docker](#scenario-3-running-the-application-without-docker)
+- [Flask Microservice](#run-the-flask-microservice)
+
+- [Postman Documentation](#postman-documentation)
+- [Contatct](#contact)
+- [License](#license)
+
+
 
 ## Features
 
@@ -200,31 +226,43 @@ Before you begin, ensure you have the following installed:
 
 ## Running the Application
 
+### Scenario 1: Using Docker Compose for Full Setup
+
+In this scenario, you can set up everything with Docker Compose, and the application will be ready without additional manual steps.
+
+1. Ensure Docker is running, either in the foreground or background, before proceeding. 
+
+2. Start the entire application by running the following command:
+
+    ```bash
+      docker-compose up -d
+    ```
+
+    This will automatically launch the databases, Redis cache, perform Prisma migrations, generate types, and start all microservices.
+
+3. Verify that the services are running by executing:
+    ```bash
+      docker ps
+    ```
+
+4. Your project should now be available at `http://localhost:9090`.
+
+---
+
+### Scenario 2: Using Docker for Databases Only, Manual Migrations and Services
+
+In this scenario, you use Docker Compose to launch the databases, but handle the migrations and microservices manually.
+
 1. **Start Docker Containers for Databases and Redis Cache**:
 
   - Ensure that Docker is running, either in the foreground or background, before proceeding. 
 
-    - Start the user database container:
+    - Start the databases and Redis cache with:
       ```bash
-      docker compose up agrisistance-user-db -d
+      docker-compose up agrisistance-user-db agrisistance-land-db agrisistance-network-db agrisistance-redis-cache -d
       ```
 
-    - Start the land database container:
-      ```bash
-      docker compose up agrisistance-land-db -d
-      ```
-
-    - Start the network database container:
-      ```bash
-      docker compose up agrisistance-network-db -d
-      ```
-
-    - Start the Redis cache:
-      ```bash
-      docker compose up agrisistance-redis-cache -d
-      ```
-
-    By following these steps, your databases should be up and running. To verify that everything is working correctly, run the following command:
+      By following these steps, your databases should be up and running. To verify that everything is working correctly, run the following command:
       ```bash
         docker ps
       ```
@@ -313,9 +351,142 @@ Before you begin, ensure you have the following installed:
       ```
     Your project should now be running at `http://localhost:9090`.
 
-6. **Run the Flask Microservice**:
+---
 
-    - The Flask microservice handles AI models. You can find the repository [here](https://github.com/flh-raouf/agrisistance-model-microservice).
+### Scenario 3: Running the Application Without Docker
+
+If Docker is not available or causes issues, you can set up PostgreSQL and Redis locally and run the application manually.
+
+1. Install PostgreSQL on your local machine if it’s not already installed. You can follow [PostgreSQL installation instructions](https://www.postgresql.org/download/) from their official website.
+
+2. Set up the PostgreSQL databases by creating the necessary databases:
+
+- Create the user database:
+
+  ```
+  CREATE DATABASE agrisistance_user_db;
+  ```
+
+- Create the land database:
+
+  ```
+  CREATE DATABASE agrisistance_land_db;
+  ```
+
+- Create the network database:
+
+  ```
+  CREATE DATABASE agrisistance_network_db;
+  ```
+
+3. Set up environment variables: Ensure that the `.env` file has the correct PostgreSQL connection details.
+
+- Example PostgreSQL connection strings:
+
+  ```
+  POSTGRES_USER=your_pg_user
+  POSTGRES_PASSWORD=your_pg_password
+  POSTGRES_HOST=localhost
+  POSTGRES_PORT=5432
+  POSTGRES_USER_DB=agrisistance_user_db
+  POSTGRES_LAND_DB=agrisistance_land_db
+  POSTGRES_NETWORK_DB=agrisistance_network_db
+  ```
+
+4. Install Redis locally by following the [Redis installation instructions](https://redis.io/docs/getting-started/installation/) from the Redis website.
+
+
+5. **Run Prisma Migrations for Each Database**:
+
+    - Migrate the land database:
+      ```bash
+      npx prisma migrate dev --schema=./apps/agrisistance-land-service/prisma/schema.land.prisma
+      ```
+
+    - Migrate the network database:
+      ```bash
+      npx prisma migrate dev --schema=./apps/agrisistance-network-service/prisma/schema.network.prisma
+      ```
+
+    - Migrate the user database:
+      ```bash
+      npx prisma migrate dev --schema=./apps/agrisistance-user-service/prisma/schema.user.prisma
+      ```
+
+6. **Generate Types for the Project**:
+
+    - Generate types for the land service:
+      ```bash
+      npx prisma generate --schema=./apps/agrisistance-land-service/prisma/schema.land.prisma
+      ```
+
+    - Generate types for the network service:
+      ```bash
+      npx prisma generate --schema=./apps/agrisistance-network-service/prisma/schema.network.prisma
+      ```
+
+    - Generate types for the user service:
+      ```bash
+      npx prisma generate --schema=./apps/agrisistance-user-service/prisma/schema.user.prisma
+      ```
+
+    - Generate additional types for the user service (land and network schemas):
+      ```bash
+      npx prisma generate --schema=./apps/agrisistance-user-service/prisma/schema.land.prisma
+      npx prisma generate --schema=./apps/agrisistance-user-service/prisma/schema.network.prisma
+      ```
+
+    
+
+7. **Launch Databases with Prisma Studio**:
+
+    - Open Prisma Studio for the land service:
+      ```bash
+      npx prisma studio --schema=./apps/agrisistance-land-service/prisma/schema.land.prisma
+      ```
+
+    - Open Prisma Studio for the network service:
+      ```bash
+      npx prisma studio --schema=./apps/agrisistance-network-service/prisma/schema.network.prisma
+      ```
+
+    - Open Prisma Studio for the user service:
+      ```bash
+      npx prisma studio --schema=./apps/agrisistance-user-service/prisma/schema.user.prisma
+      ```
+
+8. **Run the Project Services**:
+
+  - Start the services in different terminals
+
+    - Start the API Gateway service:
+      ```bash
+      npm run start:dev agrisistance-api-gateway
+      ```
+
+    - Start the user service:
+      ```bash
+      npm run start:dev agrisistance-user-service
+      ```
+
+    - Start the land service:
+      ```bash
+      npm run start:dev agrisistance-land-service
+      ```
+
+    - Start the network service:
+      ```bash
+      npm run start:dev agrisistance-network-service
+      ```
+    Your project should now be running at `http://localhost:9090`.
+
+---
+
+With these three scenarios, you should be able to run the project regardless of the user's environment, covering both Docker and non-Docker setups.
+
+## Run the Flask Microservice:
+
+  - The Flask microservice handles AI models. You can find the repository [here](https://github.com/flh-raouf/agrisistance-model-microservice).
 
 
  ## Postman Documentation
@@ -326,6 +497,14 @@ Before you begin, ensure you have the following installed:
 
    Make sure the server is running at `http://localhost:9090` before testing the endpoints in Postman.
     
+## Contact
+
+For inquiries or feedback, reach out to us at:
+
+- 📧 Email: [ma_fellahi@esi.dz](mailto:ma_fellahi@esi.dz)
+- 🌐 WhatsApp: +213 551 61 19 83
+- **GitHub :** [flh-raouf](https://github.com/flh-raouf)
+
 
 ## License
 

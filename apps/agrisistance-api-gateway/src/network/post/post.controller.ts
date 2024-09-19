@@ -1,14 +1,14 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, UseGuards } from "@nestjs/common";
-import { JwtGuard } from "../.guard/jwt.guard";
-import { JwtDecorator } from "../.decorator";
-import { NetworkService } from "./network.service";
+import { JwtGuard } from "../../.guard/jwt.guard";
+import { JwtDecorator } from "../../.decorator";
+import { PostService } from "./post.service";
 import { ArchiveDeletePostDto, CreatePostDto, UpdatePostDto } from "./dto";
 
 @Controller('network')
 @UseGuards(JwtGuard)
-export class NetworkController {
+export class PostController {
 
-    constructor(private networkService: NetworkService) {}
+    constructor(private postService: PostService) {}
 
     @Post('create-post')
     @HttpCode(HttpStatus.CREATED)
@@ -16,7 +16,7 @@ export class NetworkController {
         @Body() createpostDto: CreatePostDto,
         @JwtDecorator('user_id') user_id: string,
     ){
-        return this.networkService.createPost(user_id, createpostDto);
+        return this.postService.createPost(user_id, createpostDto);
     }
 
 
@@ -27,7 +27,7 @@ export class NetworkController {
         @Body() updatePostDto: UpdatePostDto,
         @JwtDecorator('user_id') user_id: string,
     ){
-        return this.networkService.updatePost(user_id, post_id, updatePostDto);
+        return this.postService.updatePost(user_id, post_id, updatePostDto);
     }
 
 
@@ -38,7 +38,7 @@ export class NetworkController {
         @Body() archivePostDto: ArchiveDeletePostDto,
         @JwtDecorator('user_id') user_id: string,
     ){
-        return this.networkService.archivePost(user_id, archivePostDto);
+        return this.postService.archivePost(user_id, archivePostDto);
     }
 
     @Patch('unarchive-post')
@@ -47,7 +47,7 @@ export class NetworkController {
         @Body() unarchivePostDto: ArchiveDeletePostDto,
         @JwtDecorator('user_id') user_id: string,
     ){
-        return this.networkService.unarchivePost(user_id, unarchivePostDto);
+        return this.postService.unarchivePost(user_id, unarchivePostDto);
     }
 
 
@@ -57,7 +57,7 @@ export class NetworkController {
         @Body() deletePostDto: ArchiveDeletePostDto,
         @JwtDecorator('user_id') user_id: string,
     ){
-        return this.networkService.deletePost(user_id, deletePostDto);
+        return this.postService.deletePost(user_id, deletePostDto);
     }
 
 
@@ -66,7 +66,7 @@ export class NetworkController {
     async getMyPosts(
         @JwtDecorator('user_id') user_id: string,
     ){
-        return this.networkService.getMyPosts(user_id);
+        return this.postService.getMyPosts(user_id);
     }
 
 
@@ -75,7 +75,7 @@ export class NetworkController {
     async getAllPosts(
         @JwtDecorator('user_id') user_id: string,
     ){
-        return this.networkService.getAllPosts(user_id);
+        return this.postService.getAllPosts(user_id);
     }
 
 
@@ -85,7 +85,7 @@ export class NetworkController {
         @Param('post_type') post_type: string,
         @JwtDecorator('user_id') user_id: string,
     ){
-        return this.networkService.getPostByType(user_id, post_type);
+        return this.postService.getPostByType(user_id, post_type);
     }
 
 

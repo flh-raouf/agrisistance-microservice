@@ -3,7 +3,7 @@ import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservice
 import { CreatePostDto, ArchiveDeletePostDto, UpdatePostDto, GetPostByTypeDto } from './dto';
 
 @Injectable()
-export class NetworkService {
+export class PostService {
 
     constructor(
         @Inject('NETWORK_SERVICE') private readonly networkClient: ClientProxy,
