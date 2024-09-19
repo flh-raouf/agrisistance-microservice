@@ -100,8 +100,8 @@ Before you begin, ensure you have the following installed:
 1. **Create a `.env` file** in the root directory of the project with the following structure:
 
     ```plaintext
-    POSTGRES_USER=''
-    POSTGRES_PASSWORD=''
+    POSTGRES_USER='postgres'
+    POSTGRES_PASSWORD='root'
     POSTGRES_LAND_DB="agrisistance_land_db"
     POSTGRES_USER_DB="agrisistance_user_db"
     POSTGRES_NETWORK_DB="agrisistance_network_db"
@@ -110,8 +110,19 @@ Before you begin, ensure you have the following installed:
     DATABASE_USER_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@0.0.0.0:5435/${POSTGRES_USER_DB}?schema=public'
     DATABASE_NETWORK_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@0.0.0.0:5436/${POSTGRES_NETWORK_DB}?schema=public'
 
-    REDIS_HOST = "localhost"
+    REDIS_HOST = "agrisistance-redis-cache"
     REDIS_PORT = 6380
+
+
+    USER_HOST = "agrisistance-user-service"
+    LAND_HOST = "agrisistance-land-service"
+    NETWORK_HOST = "agrisistance-network-service"
+
+    API_GATEWAY_PORT = 9090
+    USER_PORT = 9091
+    LAND_PORT = 9092
+    NETWORK_PORT = 9093
+
 
     EMAIL_USER=''
     EMAIL_PASSWORD='' 
@@ -235,7 +246,7 @@ In this scenario, you can set up everything with Docker Compose, and the applica
 2. Start the entire application by running the following command:
 
     ```bash
-      docker-compose up -d
+    docker-compose up
     ```
 
     This will automatically launch the databases, Redis cache, perform Prisma migrations, generate types, and start all microservices.
@@ -246,6 +257,19 @@ In this scenario, you can set up everything with Docker Compose, and the applica
     ```
 
 4. Your project should now be available at `http://localhost:9090`.
+
+If you encounter any issues try starting services one by one from the [docker-compose.yaml](./docker-compose.yaml)
+
+5. In order to start Prisma Studio, follow these commands:
+  ```bash
+    docker-compose exec agrisistance-user-service npx prisma studio --schema=./apps/agrisistance-user-service/prisma/schema.user.prisma
+  ```
+  ```bash
+    docker-compose exec agrisistance-land-service npx prisma studio --schema=./apps/agrisistance-land-service/prisma/schema.land.prisma
+  ```
+  ```bash
+    docker-compose exec agrisistance-network-service npx prisma studio --schema=./apps/agrisistance-network-service/prisma/schema.network.prisma
+  ```
 
 ---
 
@@ -384,13 +408,18 @@ If Docker is not available or causes issues, you can set up PostgreSQL and Redis
 - Example PostgreSQL connection strings:
 
   ```
-  POSTGRES_USER=your_pg_user
-  POSTGRES_PASSWORD=your_pg_password
+  POSTGRES_USER="postgres"
+  POSTGRES_PASSWORD="root"
+
   POSTGRES_HOST=localhost
   POSTGRES_PORT=5432
+
   POSTGRES_USER_DB=agrisistance_user_db
   POSTGRES_LAND_DB=agrisistance_land_db
   POSTGRES_NETWORK_DB=agrisistance_network_db
+
+  REDIS_HOST = 'localhost'
+  REDIS_PORT = 6379
   ```
 
 4. Install Redis locally by following the [Redis installation instructions](https://redis.io/docs/getting-started/installation/) from the Redis website.

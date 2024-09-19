@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   
   agrisistance-land-db:
@@ -62,13 +60,33 @@ services:
     networks:
       - agrisistance-network
 
-  prisma-migrations:
+  prisma-migrations-user:
     image: node:20
     depends_on:
       agrisistance-user-db:
         condition: service_healthy
+    volumes:
+      - .:/app
+    working_dir: /app
+    networks:
+      - agrisistance-network
+    command: npx prisma migrate deploy --schema=./apps/agrisistance-user-service/prisma/schema.user.prisma
+
+  prisma-migrations-land:
+    image: node:20
+    depends_on:
       agrisistance-land-db:
         condition: service_healthy
+    volumes:
+      - .:/app
+    working_dir: /app
+    networks:
+      - agrisistance-network
+    command: npx prisma migrate deploy --schema=./apps/agrisistance-land-service/prisma/schema.land.prisma
+
+  prisma-migrations-network:
+    image: node:20
+    depends_on:
       agrisistance-network-db:
         condition: service_healthy
     volumes:
@@ -76,21 +94,10 @@ services:
     working_dir: /app
     networks:
       - agrisistance-network
-    command: >
-      sh -c "
-        npx prisma migrate deploy --schema=./apps/agrisistance-user-service/prisma/schema.user.prisma &&
-        npx prisma migrate deploy --schema=./apps/agrisistance-land-service/prisma/schema.land.prisma &&
-        npx prisma migrate deploy --schema=./apps/agrisistance-network-service/prisma/schema.network.prisma       
-      "
+    command: npx prisma migrate deploy --schema=./apps/agrisistance-network-service/prisma/schema.network.prisma
+
   prisma-generations:
     image: node:20
-    depends_on:
-      agrisistance-user-db:
-        condition: service_healthy
-      agrisistance-land-db:
-        condition: service_healthy
-      agrisistance-network-db:
-        condition: service_healthy
     volumes:
       - .:/app
     working_dir: /app
@@ -99,25 +106,17 @@ services:
     command: >
       sh -c "
         npx prisma generate --schema=./apps/agrisistance-user-service/prisma/schema.user.prisma &&
-        npx prisma generate --schema=./apps/agrisistance-user-service/prisma/schema.land.prisma &&
-        npx prisma generate --schema=./apps/agrisistance-user-service/prisma/schema.network.prisma &&
         npx prisma generate --schema=./apps/agrisistance-land-service/prisma/schema.land.prisma &&
-        npx prisma generate --schema=./apps/agrisistance-network-service/prisma/schema.network.prisma       
+        npx prisma generate --schema=./apps/agrisistance-network-service/prisma/schema.network.prisma
       "
 
-  
   agrisistance-api-gateway:
     build:
       context: .
       dockerfile: ./apps/agrisistance-api-gateway/Dockerfile
-    depends_on:
-      prisma-migrations:
-        condition: service_completed_successfully
-      prisma-generations:
-        condition: service_completed_successfully
     restart: always
     ports:
-      - ${PORT}:${PORT}
+      - ${API_GATEWAY_PORT}:${API_GATEWAY_PORT}
     networks:
       - agrisistance-network
     command: npm run start:dev agrisistance-api-gateway
@@ -126,9 +125,6 @@ services:
     build:
       context: .
       dockerfile: ./apps/agrisistance-user-service/Dockerfile
-    depends_on:
-      prisma-migrations:
-        condition: service_completed_successfully
     restart: always
     ports:
       - ${USER_PORT}:${USER_PORT}
@@ -141,9 +137,6 @@ services:
     build:
       context: .
       dockerfile: ./apps/agrisistance-land-service/Dockerfile
-    depends_on:
-      prisma-migrations:
-        condition: service_completed_successfully
     restart: always
     ports:
       - ${LAND_PORT}:${LAND_PORT}
@@ -156,9 +149,6 @@ services:
     build:
       context: .
       dockerfile: ./apps/agrisistance-network-service/Dockerfile
-    depends_on:
-      prisma-migrations:
-        condition: service_completed_successfully
     restart: always
     ports:
       - ${NETWORK_PORT}:${NETWORK_PORT}
@@ -166,7 +156,6 @@ services:
     networks:
       - agrisistance-network
     command: npm run start:dev agrisistance-network-service
-    
 
 networks:
   agrisistance-network:
