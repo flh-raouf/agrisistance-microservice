@@ -286,7 +286,7 @@ export class PostService {
 
             const userSeenPosts = posts.map((post) => ({ user_id: user_id, post_id: post.post_id }));
 
-            await this.prisma.user_Seen_Post.createMany({ data: userSeenPosts });
+            //await this.prisma.user_Seen_Post.createMany({ data: userSeenPosts });
 
             return posts;
         } catch (error) {
@@ -332,7 +332,7 @@ export class PostService {
 
             const userSeenPosts = posts.map((post) => ({ user_id: user_id, post_id: post.post_id }));
 
-            await this.prisma.user_Seen_Post.createMany({ data: userSeenPosts });
+            //await this.prisma.user_Seen_Post.createMany({ data: userSeenPosts });
 
             return posts;
         } catch (error) {
