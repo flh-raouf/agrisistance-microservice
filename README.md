@@ -5,68 +5,26 @@
 </p>
 
 # 🌱 AGRISISTANCE
-
-**A2SV-Agrisistance** is an AI-driven web application aimed at helping African farmers optimize land use and boost crop productivity. Utilizing advanced machine learning algorithms and data analytics, AGRISISTANCE offers actionable insights and personalized recommendations tailored to individual farming needs.
-
-## Features
-
-### Optimizing Land Use
-
-- 🌿 Analyzes soil properties, weather conditions, and historical crop data.
-- 🌾 Provides recommendations for optimal crop selection and planting schedules.
-
-### Boosting Crop Productivity
-
-- 💧 Personalized advice on irrigation, fertilization, and pest management.
-- 📈 AI-driven insights to enhance crop yields.
-
-### Business Planning
-
-- 💼 Financial forecasts, market trends, and cost-benefit analyses.
-- 🗺️ Strategic planning and decision-making support.
-
-### Resource Management
-
-- 💧 Monitors water usage and tracks seed and fertilizer inventory.
-- 📊 Tools for efficient resource management.
-
-### Networking and Industrial Connections
-
-- 🌍 Connects farmers with related industries, such as delivery services and processing factories.
-- 🔗 Streamlines supply chain processes and builds valuable industrial connections.
-
-## Getting Started
-
-Follow these steps to set up and run the AGRISISTANCE project locally:
+If you are reading this file that you came from [main branch](https://github.com/flh-raouf/agrisistance-microservice/tree/main). please follow this steps in order to run the project locally using only docker and without any furthur manual configurations
 
 ### Prerequisites
 
 Before you begin, ensure you have the following installed:
 
-- [Node.js](https://nodejs.org/): This project requires Node.js to run. Download and install it from [nodejs.org](https://nodejs.org/).
-- [Git](https://git-scm.com/): You’ll need Git to clone the repository. Download and install it from [git-scm.com](https://git-scm.com/).
 - [Docker](https://docker.com/): Docker is required to run the databases.
 
-## Cloning the Repository
+## Cloning the Repository if you haven't
 
 1. **Clone the repository**: Open your terminal or command prompt and run the following command:
 
     ```bash
-    git clone https://github.com/AGRISISTANCE/Agrisistance-Backend.git
+    git clone -b local-deploy https://https://github.com/flh-raouf/agrisistance-microservice.git
     ```
 
 2. **Navigate to the project directory**:
 
     ```bash
-    cd Agrisistance-Backend
-    ```
-
-## Installing Dependencies
-
-1. **Install project dependencies**: Run the following command to install all the required npm packages:
-
-    ```bash
-    npm install
+    cd agrisistance-microservice
     ```
 
 ## Setting Up Environment Variables
@@ -74,18 +32,24 @@ Before you begin, ensure you have the following installed:
 1. **Create a `.env` file** in the root directory of the project with the following structure:
 
     ```plaintext
-    POSTGRES_USER=''
-    POSTGRES_PASSWORD=''
+    POSTGRES_USER='postgres'
+    POSTGRES_PASSWORD='root'
+
     POSTGRES_LAND_DB="agrisistance_land_db"
     POSTGRES_USER_DB="agrisistance_user_db"
     POSTGRES_NETWORK_DB="agrisistance_network_db"
 
-    DATABASE_LAND_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@0.0.0.0:5434/${POSTGRES_LAND_DB}?schema=public'
-    DATABASE_USER_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@0.0.0.0:5435/${POSTGRES_USER_DB}?schema=public'
-    DATABASE_NETWORK_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@0.0.0.0:5436/${POSTGRES_NETWORK_DB}?schema=public'
+    DATABASE_USER_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@agrisistance-user-db:5432/${POSTGRES_USER_DB}?    schema=public'
+    DATABASE_LAND_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@agrisistance-land-db:5433/${POSTGRES_LAND_DB}?    schema=public'
+    DATABASE_NETWORK_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@agrisistance-network-db:5434/$   {POSTGRES_NETWORK_DB}?schema=public'
 
-    REDIS_HOST = "localhost"
-    REDIS_PORT = 6380
+    API_GATEWAY_PORT = 9090
+    USER_PORT = 9091
+    LAND_PORT = 9092
+    NETWORK_PORT = 9093
+
+    REDIS_HOST = "agrisistance-redis-cache"
+    REDIS_PORT = 6379
 
     EMAIL_USER=''
     EMAIL_PASSWORD='' 
@@ -110,7 +74,6 @@ Before you begin, ensure you have the following installed:
     CLOUDINARY_API_KEY=''
     CLOUDINARY_API_SECRET=''
 
-    PORT=''
     ```
 
 2. **Explanation of Environment Variables**:
@@ -200,118 +163,41 @@ Before you begin, ensure you have the following installed:
 
 ## Running the Application
 
-1. **Start Docker Containers for Databases and Redis Cache**:
+1. Ensure Docker is running, either in the foreground or background, before proceeding. 
 
-  - Ensure that Docker is running, either in the foreground or background, before proceeding. 
+2. Start the entire application by running the following command:
 
-    - Start the user database container:
-      ```bash
-      docker compose up agrisistance-user-db -d
-      ```
+    ```bash
+    docker-compose up
+    ```
 
-    - Start the land database container:
-      ```bash
-      docker compose up agrisistance-land-db -d
-      ```
+    This will automatically launch the databases, Redis cache, perform Prisma migrations, generate types, and start all microservices.
 
-    - Start the network database container:
-      ```bash
-      docker compose up agrisistance-network-db -d
-      ```
+3. Verify that the services are running by executing:
+    ```bash
+      docker ps
+    ```
 
-    - Start the Redis cache:
-      ```bash
-      docker compose up agrisistance-redis-cache -d
-      ```
+4. Your project should now be available at `http://localhost:9090`.
 
-    By following these steps, your databases should be up and running. To verify that everything is working correctly, run the following command:
-      ```bash
-        docker ps
-      ```
+If you encounter any issues try starting services one by one following the same order as defined in the [docker-compose.yaml](./docker-compose.yaml)
 
-2. **Run Prisma Migrations for Each Database**:
+5. In order to start Prisma Studio, follow these commands:
+  ```bash
+    docker-compose exec agrisistance-user-service npx prisma studio --schema=./apps/agrisistance-user-service/prisma/schema.user.prisma
+  ```
+  Your user database should now  be available at  `http://localhost:5555`
+  ```bash
+    docker-compose exec agrisistance-land-service npx prisma studio --schema=./apps/agrisistance-land-service/prisma/schema.land.prisma
+  ```
+  Your land database should now  be available at  `http://localhost:5556`
+  ```bash
+    docker-compose exec agrisistance-network-service npx prisma studio --schema=./apps/agrisistance-network-service/prisma/schema.network.prisma
+  ```
+  Your network database should now  be available at  `http://localhost:5557`
 
-    - Migrate the land database:
-      ```bash
-      npx prisma migrate dev --schema=./apps/agrisistance-land-service/prisma/schema.land.prisma
-      ```
 
-    - Migrate the network database:
-      ```bash
-      npx prisma migrate dev --schema=./apps/agrisistance-network-service/prisma/schema.network.prisma
-      ```
 
-    - Migrate the user database:
-      ```bash
-      npx prisma migrate dev --schema=./apps/agrisistance-user-service/prisma/schema.user.prisma
-      ```
-
-3. **Generate Types for the Project**:
-
-    - Generate types for the land service:
-      ```bash
-      npx prisma generate --schema=./apps/agrisistance-land-service/prisma/schema.land.prisma
-      ```
-
-    - Generate types for the network service:
-      ```bash
-      npx prisma generate --schema=./apps/agrisistance-network-service/prisma/schema.network.prisma
-      ```
-
-    - Generate types for the user service:
-      ```bash
-      npx prisma generate --schema=./apps/agrisistance-user-service/prisma/schema.user.prisma
-      ```
-
-    - Generate additional types for the user service (land and network schemas):
-      ```bash
-      npx prisma generate --schema=./apps/agrisistance-user-service/prisma/schema.land.prisma
-      npx prisma generate --schema=./apps/agrisistance-user-service/prisma/schema.network.prisma
-      ```
-
-    
-
-4. **Launch Databases with Prisma Studio**:
-
-    - Open Prisma Studio for the land service:
-      ```bash
-      npx prisma studio --schema=./apps/agrisistance-land-service/prisma/schema.land.prisma
-      ```
-
-    - Open Prisma Studio for the network service:
-      ```bash
-      npx prisma studio --schema=./apps/agrisistance-network-service/prisma/schema.network.prisma
-      ```
-
-    - Open Prisma Studio for the user service:
-      ```bash
-      npx prisma studio --schema=./apps/agrisistance-user-service/prisma/schema.user.prisma
-      ```
-
-5. **Run the Project Services**:
-
-  - Start the services in different terminals
-
-    - Start the API Gateway service:
-      ```bash
-      npm run start:dev agrisistance-api-gateway
-      ```
-
-    - Start the user service:
-      ```bash
-      npm run start:dev agrisistance-user-service
-      ```
-
-    - Start the land service:
-      ```bash
-      npm run start:dev agrisistance-land-service
-      ```
-
-    - Start the network service:
-      ```bash
-      npm run start:dev agrisistance-network-service
-      ```
-    Your project should now be running at `http://localhost:9090`.
 
 6. **Run the Flask Microservice**:
 
@@ -325,7 +211,15 @@ Before you begin, ensure you have the following installed:
    - You can find the Postman documentation for this project [here](https://documenter.getpostman.com/view/32136798/2sAXqngkQA).
 
    Make sure the server is running at `http://localhost:9090` before testing the endpoints in Postman.
-    
+
+## Contact
+
+For inquiries or feedback, reach out to us at:
+
+- 📧 Email: [ma_fellahi@esi.dz](mailto:ma_fellahi@esi.dz)
+- 🌐 WhatsApp: +213 551 61 19 83
+- **GitHub :** [flh-raouf](https://github.com/flh-raouf)
+
 
 ## License
 

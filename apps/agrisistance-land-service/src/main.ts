@@ -11,7 +11,7 @@ async function bootstrap() {
     {
       transport: Transport.TCP,
       options: {
-        host: process.env.LAND_HOST || '0.0.0.0',
+        host: "agrisistance-land-service",
         port: Number(process.env.KAND_PORT) || 9092,
       },
     },

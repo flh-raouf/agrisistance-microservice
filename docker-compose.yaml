@@ -2,28 +2,11 @@ version: '3.8'
 
 services:
   
-  agrisistance-land-db:
-    image: postgres:latest
-    restart: always
-    ports:
-      - "5434:5432"
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_LAND_DB}
-    networks:
-      - agrisistance-network
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"] 
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   agrisistance-user-db:
     image: postgres:latest
     restart: always
     ports:
-      - "5435:5432"
+      - "5432:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -36,11 +19,30 @@ services:
       timeout: 5s
       retries: 5
 
+
+  agrisistance-land-db:
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_LAND_DB}
+    networks:
+      - agrisistance-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"] 
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
   agrisistance-network-db:
     image: postgres:latest
     restart: always
     ports:
-      - "5436:5432"
+      - "5434:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -58,7 +60,7 @@ services:
     image: redis:latest
     restart: always
     ports:
-      - "6380:6379"
+      - "6379:6379"
     networks:
       - agrisistance-network
 
@@ -117,7 +119,7 @@ services:
     #     condition: service_completed_successfully
     restart: always
     ports:
-      - ${PORT}:${PORT}
+      - ${API_GATEWAY_PORT}:${API_GATEWAY_PORT}
     networks:
       - agrisistance-network
     command: npm run start:dev agrisistance-api-gateway

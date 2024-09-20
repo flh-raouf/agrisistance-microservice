@@ -10,7 +10,7 @@ async function bootstrap() {
     {
       transport: Transport.TCP,
       options: {
-        host: process.env.NETWORK_HOST || '0.0.0.0',
+        host: "agrisistance-network-service",
         port: Number(process.env.NETWORK_PORT) || 9093,
       },
     },

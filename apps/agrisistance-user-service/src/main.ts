@@ -12,7 +12,7 @@ async function bootstrap() {
     {
       transport: Transport.TCP,
       options: {
-        host: process.env.USER_HOST || '0.0.0.0',
+        host: "agrisistance-user-service",
         port: Number(process.env.USER_PORT) || 9091,
       },
     },
