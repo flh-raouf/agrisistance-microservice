@@ -39,14 +39,13 @@ import { redisStore } from 'cache-manager-redis-yet';
         const store = await redisStore({
           ttl: 10 * 60 * 1000,
           socket: {
-            host: process.env.REDIS_HOST,
-            port: Number(process.env.REDIS_PORT),
+            host: process.env.REDIS_HOST || '0.0.0.0',
+            port: 6379,
           }
         });
 
         return { store }
       }
-      //store: redisStore
     })
   ],
 })

@@ -99,30 +99,21 @@ Before you begin, ensure you have the following installed:
 
 1. **Create a `.env` file** in the root directory of the project with the following structure:
 
-    ```plaintext
+    ```env
     POSTGRES_USER='postgres'
     POSTGRES_PASSWORD='root'
     POSTGRES_LAND_DB="agrisistance_land_db"
     POSTGRES_USER_DB="agrisistance_user_db"
     POSTGRES_NETWORK_DB="agrisistance_network_db"
 
-    DATABASE_LAND_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@0.0.0.0:5434/${POSTGRES_LAND_DB}?schema=public'
-    DATABASE_USER_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@0.0.0.0:5435/${POSTGRES_USER_DB}?schema=public'
-    DATABASE_NETWORK_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@0.0.0.0:5436/${POSTGRES_NETWORK_DB}?schema=public'
-
-    REDIS_HOST = "agrisistance-redis-cache"
-    REDIS_PORT = 6380
-
-
-    USER_HOST = "agrisistance-user-service"
-    LAND_HOST = "agrisistance-land-service"
-    NETWORK_HOST = "agrisistance-network-service"
+    DATABASE_USER_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@0.0.0.0:5432/${POSTGRES_LAND_DB}?schema=public'
+    DATABASE_LAND_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@0.0.0.0:5433/${POSTGRES_USER_DB}?schema=public'
+    DATABASE_NETWORK_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@0.0.0.0:5434/${POSTGRES_NETWORK_DB}?schema=public'
 
     API_GATEWAY_PORT = 9090
     USER_PORT = 9091
     LAND_PORT = 9092
     NETWORK_PORT = 9093
-
 
     EMAIL_USER=''
     EMAIL_PASSWORD='' 
@@ -147,7 +138,6 @@ Before you begin, ensure you have the following installed:
     CLOUDINARY_API_KEY=''
     CLOUDINARY_API_SECRET=''
 
-    PORT=''
     ```
 
 2. **Explanation of Environment Variables**:
@@ -241,37 +231,9 @@ Before you begin, ensure you have the following installed:
 
 In this scenario, you can set up everything with Docker Compose, and the application will be ready without additional manual steps.
 
-1. Ensure Docker is running, either in the foreground or background, before proceeding. 
+Please check [local-deploy branch](https://github.com/flh-raouf/agrisistance-microservice/tree/local-deploy) for further information.
 
-2. Start the entire application by running the following command:
-
-    ```bash
-    docker-compose up
-    ```
-
-    This will automatically launch the databases, Redis cache, perform Prisma migrations, generate types, and start all microservices.
-
-3. Verify that the services are running by executing:
-    ```bash
-      docker ps
-    ```
-
-4. Your project should now be available at `http://localhost:9090`.
-
-If you encounter any issues try starting services one by one from the [docker-compose.yaml](./docker-compose.yaml)
-
-5. In order to start Prisma Studio, follow these commands:
-  ```bash
-    docker-compose exec agrisistance-user-service npx prisma studio --schema=./apps/agrisistance-user-service/prisma/schema.user.prisma
-  ```
-  ```bash
-    docker-compose exec agrisistance-land-service npx prisma studio --schema=./apps/agrisistance-land-service/prisma/schema.land.prisma
-  ```
-  ```bash
-    docker-compose exec agrisistance-network-service npx prisma studio --schema=./apps/agrisistance-network-service/prisma/schema.network.prisma
-  ```
-
----
+   
 
 ### Scenario 2: Using Docker for Databases Only, Manual Migrations and Services
 
@@ -283,10 +245,11 @@ In this scenario, you use Docker Compose to launch the databases, but handle the
 
     - Start the databases and Redis cache with:
       ```bash
-      docker-compose up agrisistance-user-db agrisistance-land-db agrisistance-network-db agrisistance-redis-cache -d
+      docker-compose up -d
       ```
 
       By following these steps, your databases should be up and running. To verify that everything is working correctly, run the following command:
+
       ```bash
         docker ps
       ```

@@ -1,27 +1,12 @@
+version: '3.8'
+
 services:
-  
-  agrisistance-land-db:
-    image: postgres:latest
-    restart: always
-    ports:
-      - "5434:5432"
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_LAND_DB}
-    networks:
-      - agrisistance-network
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"] 
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   agrisistance-user-db:
     image: postgres:latest
     restart: always
     ports:
-      - "5435:5432"
+      - "5432:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -34,11 +19,29 @@ services:
       timeout: 5s
       retries: 5
 
+
+  agrisistance-land-db:
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_LAND_DB}
+    networks:
+      - agrisistance-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"] 
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   agrisistance-network-db:
     image: postgres:latest
     restart: always
     ports:
-      - "5436:5432"
+      - "5434:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -46,7 +49,7 @@ services:
     networks:
       - agrisistance-network
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]  # Use POSTGRES_USER instead of "network"
       interval: 10s
       timeout: 5s
       retries: 5
@@ -56,106 +59,10 @@ services:
     image: redis:latest
     restart: always
     ports:
-      - "6380:6379"
+      - "6379:6379"
     networks:
       - agrisistance-network
 
-  prisma-migrations-user:
-    image: node:20
-    depends_on:
-      agrisistance-user-db:
-        condition: service_healthy
-    volumes:
-      - .:/app
-    working_dir: /app
-    networks:
-      - agrisistance-network
-    command: npx prisma migrate deploy --schema=./apps/agrisistance-user-service/prisma/schema.user.prisma
-
-  prisma-migrations-land:
-    image: node:20
-    depends_on:
-      agrisistance-land-db:
-        condition: service_healthy
-    volumes:
-      - .:/app
-    working_dir: /app
-    networks:
-      - agrisistance-network
-    command: npx prisma migrate deploy --schema=./apps/agrisistance-land-service/prisma/schema.land.prisma
-
-  prisma-migrations-network:
-    image: node:20
-    depends_on:
-      agrisistance-network-db:
-        condition: service_healthy
-    volumes:
-      - .:/app
-    working_dir: /app
-    networks:
-      - agrisistance-network
-    command: npx prisma migrate deploy --schema=./apps/agrisistance-network-service/prisma/schema.network.prisma
-
-  prisma-generations:
-    image: node:20
-    volumes:
-      - .:/app
-    working_dir: /app
-    networks:
-      - agrisistance-network
-    command: >
-      sh -c "
-        npx prisma generate --schema=./apps/agrisistance-user-service/prisma/schema.user.prisma &&
-        npx prisma generate --schema=./apps/agrisistance-land-service/prisma/schema.land.prisma &&
-        npx prisma generate --schema=./apps/agrisistance-network-service/prisma/schema.network.prisma
-      "
-
-  agrisistance-api-gateway:
-    build:
-      context: .
-      dockerfile: ./apps/agrisistance-api-gateway/Dockerfile
-    restart: always
-    ports:
-      - ${API_GATEWAY_PORT}:${API_GATEWAY_PORT}
-    networks:
-      - agrisistance-network
-    command: npm run start:dev agrisistance-api-gateway
-
-  agrisistance-user-service:
-    build:
-      context: .
-      dockerfile: ./apps/agrisistance-user-service/Dockerfile
-    restart: always
-    ports:
-      - ${USER_PORT}:${USER_PORT}
-      - 5555:5555
-    networks:
-      - agrisistance-network
-    command: npm run start:dev agrisistance-user-service
-
-  agrisistance-land-service:
-    build:
-      context: .
-      dockerfile: ./apps/agrisistance-land-service/Dockerfile
-    restart: always
-    ports:
-      - ${LAND_PORT}:${LAND_PORT}
-      - 5556:5555
-    networks:
-      - agrisistance-network
-    command: npm run start:dev agrisistance-land-service
-
-  agrisistance-network-service:
-    build:
-      context: .
-      dockerfile: ./apps/agrisistance-network-service/Dockerfile
-    restart: always
-    ports:
-      - ${NETWORK_PORT}:${NETWORK_PORT}
-      - 5557:5555
-    networks:
-      - agrisistance-network
-    command: npm run start:dev agrisistance-network-service
 
 networks:
   agrisistance-network:
