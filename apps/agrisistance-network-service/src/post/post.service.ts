@@ -109,7 +109,10 @@ export class PostService {
     async archivePost(archivePostDto: ArchiveDeletePostDto) {
         try {
             const existingPost = await this.prisma.post.findUnique({
-                where: { post_id: archivePostDto.post_id },
+                where: { 
+                    post_id: archivePostDto.post_id,
+                    user_id: archivePostDto.user_id,
+                 },
             });
 
             if (!existingPost) {
@@ -138,11 +141,13 @@ export class PostService {
         }
     }
 
-
     async unarchivePost(unarchivePostDto: ArchiveDeletePostDto) {
         try {
             const existingPost = await this.prisma.post.findUnique({
-                where: { post_id: unarchivePostDto.post_id },
+                where: { 
+                    post_id: unarchivePostDto.post_id,
+                    user_id: unarchivePostDto.user_id, 
+                },
             });
 
             if (!existingPost) {
@@ -170,12 +175,14 @@ export class PostService {
             };
         }
     }
-                
 
     async deletePost(deletePostDto: ArchiveDeletePostDto) {
         try {
             const existingPost = await this.prisma.post.findUnique({
-                where: { post_id: deletePostDto.post_id },
+                where: { 
+                    post_id: deletePostDto.post_id,
+                    user_id: deletePostDto.user_id,
+                },
             });
 
             if (!existingPost) {

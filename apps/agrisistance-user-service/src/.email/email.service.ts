@@ -70,13 +70,13 @@ export class EmailService {
         
           // Customize email content based on type
           if (type === 'confirmation') {
-            emailHtml = emailTemplate.replace('verification_link', `http://${this.configService.get<string>("API_GATEWAY_HOST")}:${this.configService.get<number>("PORT")}/api/auth/register/verify/${token}`);
+            emailHtml = emailTemplate.replace('verification_link', `http://localhost:9090/api/auth/register/verify/${token}`);
           } else if (type === 'OTPverify') {
             emailHtml = emailTemplate.replace('{{otp}}', token);
           } else if (type === 'resetPassword') {
             emailHtml = emailTemplate.replace('reset_link', `https://agrisistatnce.netlify.app/auth/reset-password/${token}`);
           } else if (type === 'updateVerification') {
-            emailHtml = emailTemplate.replace('verification_link', `http://${this.configService.get<string>("API_GATEWAY_HOST")}:${this.configService.get<number>("PORT")}/api/profile/update-email/verify/${token}`);
+            emailHtml = emailTemplate.replace('verification_link', `http://localhost:9090/api/profile/update-email/verify/${token}`);
           }
         
           const mailOptions = {

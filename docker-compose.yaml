@@ -48,7 +48,7 @@ services:
     networks:
       - agrisistance-network
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]  # Use POSTGRES_USER instead of "network"
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]  
       interval: 10s
       timeout: 5s
       retries: 5
@@ -110,11 +110,11 @@ services:
     build:
       context: .
       dockerfile: ./apps/agrisistance-api-gateway/Dockerfile
-    # depends_on:
+    depends_on:
     #   prisma-migrations:
     #     condition: service_completed_successfully
-    #   prisma-generations:
-    #     condition: service_completed_successfully
+      prisma-generations:
+        condition: service_completed_successfully
     restart: always
     ports:
       - ${API_GATEWAY_PORT}:${API_GATEWAY_PORT}
@@ -126,7 +126,9 @@ services:
     build:
       context: .
       dockerfile: ./apps/agrisistance-user-service/Dockerfile
-    # depends_on:
+    depends_on:
+      prisma-generations:
+        condition: service_completed_successfully
     #   prisma-migrations:
     #     condition: service_completed_successfully
     restart: always
@@ -141,7 +143,9 @@ services:
     build:
       context: .
       dockerfile: ./apps/agrisistance-land-service/Dockerfile
-    # depends_on:
+    depends_on:
+      prisma-generations:
+        condition: service_completed_successfully
     #   prisma-migrations:
     #     condition: service_completed_successfully
     restart: always
@@ -156,7 +160,9 @@ services:
     build:
       context: .
       dockerfile: ./apps/agrisistance-network-service/Dockerfile
-    # depends_on:
+    depends_on:
+      prisma-generations:
+        condition: service_completed_successfully
     #   prisma-migrations:
     #     condition: service_completed_successfully
     restart: always

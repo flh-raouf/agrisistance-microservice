@@ -52,7 +52,7 @@ export class ProfileController {
 
     @Put('update-email/verify/:token')
     @HttpCode(HttpStatus.OK)
-    @Redirect('https://agrisistatnce.netlify.app/dashboard/profile/email-updated-successfully')
+    // @Redirect('https://agrisistatnce.netlify.app/dashboard/profile/email-updated-successfully')
     async verifyUpdateEmail(
       @Param('token') token :string,    
     ) {
