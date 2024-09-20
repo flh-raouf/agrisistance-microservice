@@ -11,7 +11,7 @@ export class PostService {
         this.networkClient = ClientProxyFactory.create({
             transport: Transport.TCP,
             options: {
-                host: '0.0.0.0',
+                host: 'localhost',
                 port: Number(process.env.NETWORK_PORT) || 9093, 
             },
         });

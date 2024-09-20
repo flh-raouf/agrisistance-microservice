@@ -14,7 +14,7 @@ export class ProfileService {
         this.userClient = ClientProxyFactory.create({
             transport: Transport.TCP,
             options: {
-                host: '0.0.0.0',
+                host: 'localhost',
                 port: Number(process.env.USER_PORT) || 9091,
             },
         });

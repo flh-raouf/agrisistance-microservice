@@ -165,7 +165,7 @@ export class AuthService {
 
                 await this.emailService.sendEmail(user.email, otp.toString(), 'OTPverify');
                 const token = this.jwtService.sign({ user_id: user.user_id }, { expiresIn: '10m' });
-                return { message: 'Please verify your OTP', token };
+                return { message: 'Please verify your OTP. Use this token to send your OTP verification request', token };
             }
 
             await this.prismaUser.user.update({
@@ -218,7 +218,7 @@ export class AuthService {
             });
 
             const token = this.jwtService.sign({ user_id: verifyOtpDto.user_id }, { expiresIn: '10d' });
-            return { message: 'OTP verified successfully', token };
+            return { message: 'OTP verified successfully. Here is your access token', token };
         } catch (error) {
             console.error('OTP verification error:', error);
             return {

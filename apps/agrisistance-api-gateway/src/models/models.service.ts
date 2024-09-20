@@ -29,7 +29,7 @@ export class ModelsService {
 
         try {
 
-            const response = await fetch('https://agrisistance-model-backend.onrender.com/chat', {  // Adjust the URL if needed
+            const response = await fetch('https://localhost:8000/chat', {  // Adjust the URL if needed
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

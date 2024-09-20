@@ -22,7 +22,7 @@ export class AuthController {
 
     @Get('register/verify/:token')
     @HttpCode(HttpStatus.OK)
-    @Redirect('https://agrisistatnce.netlify.app/auth/email-verified-successfully')
+    // @Redirect('https://agrisistatnce.netlify.app/auth/email-verified-successfully')
     async verify(
         @Param('token') token: string
     ) {
