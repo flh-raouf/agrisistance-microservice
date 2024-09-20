@@ -40,8 +40,8 @@ Before you begin, ensure you have the following installed:
     POSTGRES_NETWORK_DB="agrisistance_network_db"
 
     DATABASE_USER_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@agrisistance-user-db:5432/${POSTGRES_USER_DB}?    schema=public'
-    DATABASE_LAND_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@agrisistance-land-db:5433/${POSTGRES_LAND_DB}?    schema=public'
-    DATABASE_NETWORK_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@agrisistance-network-db:5434/$   {POSTGRES_NETWORK_DB}?schema=public'
+    DATABASE_LAND_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@agrisistance-land-db:5432/${POSTGRES_LAND_DB}?    schema=public'
+    DATABASE_NETWORK_URL='postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@agrisistance-network-db:5432/$   {POSTGRES_NETWORK_DB}?schema=public'
 
     API_GATEWAY_PORT = 9090
     USER_PORT = 9091
@@ -168,7 +168,7 @@ Before you begin, ensure you have the following installed:
 2. Start the entire application by running the following command:
 
     ```bash
-    docker-compose up
+    docker-compose up -d
     ```
 
     This will automatically launch the databases, Redis cache, perform Prisma migrations, generate types, and start all microservices.
