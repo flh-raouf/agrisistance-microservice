@@ -1,35 +1,43 @@
-import { Controller } from "@nestjs/common";
-import { LandService } from "./land.service";
-import { AddLandDto, UpdateLandDto, UserRequestDto } from "./dto";
-import { EventPattern } from "@nestjs/microservices";
+import { Controller, Post, Get, Put, Delete, Body, Query, Param } from '@nestjs/common';
+import { LandService } from './land.service';
+import { AddLandDto, UpdateLandDto, UserRequestDto } from './dto';
 
-@Controller()
+@Controller('land')
 export class LandController {
-    constructor(private landService: LandService) {}
+    constructor(private readonly landService: LandService) {}
 
-    @EventPattern('AddLand')
-    async createLand(addLandDto: AddLandDto) {
+    @Post('add-land')
+    async createLand(
+        @Body() addLandDto: AddLandDto,
+    ) {
         return await this.landService.addLand(addLandDto);
     }
 
-    @EventPattern('GetAllLands')
-    async getAllLandsEvent(user_id: string) {
+    @Post('get-all-lands/')
+    async getAllLands(
+        @Body('user_id') user_id: string,
+    ) {
         return await this.landService.getAllLands(user_id);
     }
 
-    @EventPattern('GetLandById')
-    async getLandByIdEvent(userRequestDto: UserRequestDto) {
+    @Post('get-land-by-id')
+    async getLandById(
+        @Body() userRequestDto: UserRequestDto,
+    ) {
         return await this.landService.getLandById(userRequestDto);
     }
 
-    @EventPattern('UpdateLand')
-    async updateLandEvent(updateLandDto: UpdateLandDto) {
+    @Put('update-land')
+    async updateLand(
+        @Body() updateLandDto: UpdateLandDto,
+    ) {
         return await this.landService.updateLand(updateLandDto);
     }
 
-    @EventPattern('DeleteLand')
-    async deleteLandEvent(userRequestDto: UserRequestDto) {
+    @Delete('delete-land')
+    async deleteLand(
+        @Body() userRequestDto: UserRequestDto,
+    ) {
         return await this.landService.deleteLand(userRequestDto);
     }
-    
 }

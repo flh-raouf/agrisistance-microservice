@@ -9,8 +9,6 @@ import { PrismaNetworkModule } from './.prisma/prisma-network/prisma-network.mod
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTaskModule } from './.events/schedule.module';
-import { CacheModule } from '@nestjs/cache-manager';
-import { redisStore } from 'cache-manager-redis-yet';
 
 
 
@@ -31,23 +29,7 @@ import { redisStore } from 'cache-manager-redis-yet';
 
     ScheduleModule.forRoot(),
     ScheduleTaskModule,
-
-    CacheModule.registerAsync({
-      isGlobal: true,
-      useFactory: async () => {
-
-        const store = await redisStore({
-          ttl: 10 * 60 * 1000,
-          socket: {
-            host: process.env.REDIS_HOST,
-            port: Number(process.env.REDIS_PORT),
-          }
-        });
-
-        return { store }
-      }
-      //store: redisStore
-    })
+   
   ],
 })
 export class UserServiceModule {}

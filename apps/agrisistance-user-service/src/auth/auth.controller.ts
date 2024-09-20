@@ -1,39 +1,50 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Post, Body, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { EventPattern } from '@nestjs/microservices';
 import { AuthDto, LoginDto, ResetPasswordDto, VerifyOtpDto } from './dto';
 
-@Controller()
+@Controller('auth')
 export class AuthController {
     constructor(private authService: AuthService) {}
 
-    @EventPattern('register')
-    async register(authDto: AuthDto) {
-        return this.authService.register(authDto);
+    @Post('register')
+    async register(
+        @Body() authDto: AuthDto,
+    ) {
+        return await this.authService.register(authDto);
     }
 
-    @EventPattern('register-verify')
-    async verify(token: string) {
-        return this.authService.verify(token);
+    @Post('register-verify')
+    async verify(
+        @Body('token') token: string,
+    ) {
+        return await this.authService.verify(token);
     }
 
-    @EventPattern('login')
-    async login(loginDto: LoginDto) {
-        return this.authService.login(loginDto);
+    @Post('login')
+    async login(
+        @Body() loginDto: LoginDto,
+    ) {
+        return await this.authService.login(loginDto);
     }
 
-    @EventPattern('verify-otp')
-    async verifyOtp(verifyOtpDto: VerifyOtpDto) {
-        return this.authService.verifyOtp(verifyOtpDto);
+    @Post('verify-otp')
+    async verifyOtp(
+        @Body() verifyOtpDto: VerifyOtpDto,
+    ) {
+        return await this.authService.verifyOtp(verifyOtpDto);
     }
 
-    @EventPattern('forgot-password')
-    async forgotPassword(email: string) {
-        return this.authService.forgotPassword(email);
+    @Post('forgot-password')
+    async forgotPassword(
+        @Body('email') email: string,
+    ) {
+        return await this.authService.forgotPassword(email);
     }
 
-    @EventPattern('reset-password')
-    async resetPassword(resetPasswordDto: ResetPasswordDto) {
-        return this.authService.resetPassword(resetPasswordDto);
+    @Post('reset-password')
+    async resetPassword(
+        @Body() resetPasswordDto: ResetPasswordDto,
+    ) {
+        return await this.authService.resetPassword(resetPasswordDto);
     }
 }

@@ -53,7 +53,10 @@ export class PostService {
     async updatePost(updatePostDto: UpdatePostDto) {
         try {
             const existingPost = await this.prisma.post.findUnique({
-                where: { post_id: updatePostDto.post_id, user_id: updatePostDto.user_id },
+                where: { 
+                    post_id: updatePostDto.post_id, 
+                    user_id: updatePostDto.user_id
+                 },
             });
 
             if (!existingPost) {
@@ -109,7 +112,10 @@ export class PostService {
     async archivePost(archivePostDto: ArchiveDeletePostDto) {
         try {
             const existingPost = await this.prisma.post.findUnique({
-                where: { post_id: archivePostDto.post_id },
+                where: { 
+                    post_id: archivePostDto.post_id,
+                    user_id: archivePostDto.user_id,
+                 },
             });
 
             if (!existingPost) {
@@ -138,10 +144,48 @@ export class PostService {
         }
     }
 
+    async unarchivePost(unarchivePostDto: ArchiveDeletePostDto) {
+        try {
+            const existingPost = await this.prisma.post.findUnique({
+                where: { 
+                    post_id: unarchivePostDto.post_id,
+                    user_id: unarchivePostDto.user_id, 
+                },
+            });
+
+            if (!existingPost) {
+                return {
+                    statusCode: HttpStatus.NOT_FOUND,
+                    timestamp: new Date().toISOString(),
+                    path: '/archivePost',
+                    message: 'Post not found for the user.',
+                };
+            }
+
+            await this.prisma.post.update({
+                where: { post_id: unarchivePostDto.post_id },
+                data: { is_active: true },
+            });
+
+            return { message: 'Post unarchived successfully' };
+        } catch (error) {
+            console.error('Error archiving post:', error);
+            return {
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                timestamp: new Date().toISOString(),
+                path: '/archivePost',
+                message: 'Failed to unarchive post.',
+            };
+        }
+    }
+
     async deletePost(deletePostDto: ArchiveDeletePostDto) {
         try {
             const existingPost = await this.prisma.post.findUnique({
-                where: { post_id: deletePostDto.post_id },
+                where: { 
+                    post_id: deletePostDto.post_id,
+                    user_id: deletePostDto.user_id,
+                },
             });
 
             if (!existingPost) {
@@ -181,37 +225,7 @@ export class PostService {
         }
     }
 
-    async unarchivePost(unarchivePostDto: ArchiveDeletePostDto) {
-        try {
-            const existingPost = await this.prisma.post.findUnique({
-                where: { post_id: unarchivePostDto.post_id },
-            });
-
-            if (!existingPost) {
-                return {
-                    statusCode: HttpStatus.NOT_FOUND,
-                    timestamp: new Date().toISOString(),
-                    path: '/archivePost',
-                    message: 'Post not found for the user.',
-                };
-            }
-
-            await this.prisma.post.update({
-                where: { post_id: unarchivePostDto.post_id },
-                data: { is_active: true },
-            });
-
-            return { message: 'Post unarchived successfully' };
-        } catch (error) {
-            console.error('Error archiving post:', error);
-            return {
-                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-                timestamp: new Date().toISOString(),
-                path: '/archivePost',
-                message: 'Failed to unarchive post.',
-            };
-        }
-    }
+    
 
     async getMyPosts(user_id: string) {
         try {
@@ -244,16 +258,18 @@ export class PostService {
 
     async getAllPosts(user_id: string) {
         try {
-            const seenPosts = await this.prisma.user_Seen_Post.findMany({
-                where: { user_id: user_id },
-                select: { post_id: true },
-            });
+            
+            // This functionality insure that the user doesn't get the post already saw but we'll comment this part for now since there is not many posts and users in the databases
+            // const seenPosts = await this.prisma.user_Seen_Post.findMany({
+            //     where: { user_id: user_id },
+            //     select: { post_id: true },
+            // });
 
-            const seenPostIds = seenPosts.map((seenPost) => seenPost.post_id);
+            // const seenPostIds = seenPosts.map((seenPost) => seenPost.post_id);
 
             const posts = await this.prisma.post.findMany({
-                where: { post_id: { notIn: seenPostIds } , is_active: true },
-                take: 30,
+                // where: { post_id: { notIn: seenPostIds } , is_active: true },
+                // take: 30,
                 include: {
                     user: {
                         select: {
@@ -286,18 +302,20 @@ export class PostService {
 
     async getPostByType(getPostByTypeDto: GetPostByTypeDto) {
         try {
+            
+            // This functionality insure that the user doesn't get the post already saw but we'll comment this part for now since there is not many posts and users in the databases
             const { user_id, post_type } = getPostByTypeDto;
 
-            const seenPosts = await this.prisma.user_Seen_Post.findMany({
-                where: { user_id: user_id, post: { post_type: post_type } },
-                select: { post_id: true },
-            });
+            // const seenPosts = await this.prisma.user_Seen_Post.findMany({
+            //     where: { user_id: user_id, post: { post_type: post_type } },
+            //     select: { post_id: true },
+            // });
 
-            const seenPostIds = seenPosts.map((seenPost) => seenPost.post_id);
+            // const seenPostIds = seenPosts.map((seenPost) => seenPost.post_id);
 
             const posts = await this.prisma.post.findMany({
-                where: { post_type: post_type, post_id: { notIn: seenPostIds } , is_active: true },
-                take: 30,
+                // where: { post_type: post_type, post_id: { notIn: seenPostIds } , is_active: true },
+                // take: 30,
                 include: {
                     user: {
                         select: {

@@ -1,25 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { NetworkServiceModule } from './agrisistance-network-service.module';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice<MicroserviceOptions>
-  (
-    NetworkServiceModule,
-    {
-      transport: Transport.TCP,
-      options: {
-        host: '127.0.0.1',
-        port: 3003,
-      },
-    },
-  );
-
+  const app = await NestFactory.create(NetworkServiceModule);
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
   }));
 
-  await app.listen();
+  const port = process.env.NETWORK_SERVICE_PORT || 9092;
+  await app.listen(port).then(() => {
+    console.log(`Network service is running on port ${port}`)
+  }).catch((error) => {
+    console.error('Error starting API Gateway', error);
+  });
 }
 bootstrap();

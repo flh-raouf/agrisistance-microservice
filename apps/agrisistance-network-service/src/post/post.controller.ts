@@ -1,51 +1,66 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Post, Get, Put, Delete, Body, Query } from '@nestjs/common';
 import { PostService } from './post.service';
-import { EventPattern } from '@nestjs/microservices';
 import { CreatePostDto, ArchiveDeletePostDto, UpdatePostDto, GetPostByTypeDto } from './dto';
 
 @Controller('post')
 export class PostController {
 
-    constructor(private postService: PostService) {}
+    constructor(private readonly PostService: PostService) {}
 
-    @EventPattern('create-post')
-    async createPost(createPostDto: CreatePostDto) {
-        return await this.postService.createPost(createPostDto);
+    @Post('create-post')
+    async createPost(
+        @Body() createPostDto: CreatePostDto,
+    ) {
+        return await this.PostService.createPost(createPostDto);
     }
 
-    @EventPattern('update-post')
-    async updatePost(updatePostDto: UpdatePostDto) {
-        return await this.postService.updatePost(updatePostDto);
+    @Put('update-post')
+    async updatePost(
+        @Body() updatePostDto: UpdatePostDto,
+
+    ) {
+        return await this.PostService.updatePost(updatePostDto);
     }
 
-    @EventPattern('archive-post')
-    async archivePost(archivePostDto: ArchiveDeletePostDto) {
-        return await this.postService.archivePost(archivePostDto);
+    @Post('archive-post')
+    async archivePost(
+        @Body() archivePostDto: ArchiveDeletePostDto,
+    ) {
+        return await this.PostService.archivePost(archivePostDto);
     }
 
-    @EventPattern('unarchive-post')
-    async unarchivePost(unarchivePostDto: ArchiveDeletePostDto) {
-        return await this.postService.unarchivePost(unarchivePostDto);
+    @Post('unarchive-post')
+    async unarchivePost(
+        @Body() unarchivePostDto: ArchiveDeletePostDto,
+    ) {
+        return await this.PostService.unarchivePost(unarchivePostDto);
     }
 
-    @EventPattern('delete-post')
-    async deletePost(deletePostDto: ArchiveDeletePostDto) {
-        return await this.postService.deletePost(deletePostDto);
+    @Delete('delete-post')
+    async deletePost(
+        @Body() deletePostDto: ArchiveDeletePostDto,
+    ) {
+        return await this.PostService.deletePost(deletePostDto);
     }
 
-    @EventPattern('get-my-posts')
-    async getMyPosts(user_id: string) {
-        return await this.postService.getMyPosts(user_id);
+    @Post('get-my-posts')
+    async getMyPosts(
+        @Body('user_id') user_id: string
+    ) {
+        return await this.PostService.getMyPosts(user_id);
     }
 
-    @EventPattern('get-all-posts')
-    async getAllPosts(user_id: string) {
-        return await this.postService.getAllPosts(user_id);
+    @Post('get-all-posts')
+    async getAllPosts(
+        @Body('user_id') user_id: string
+    ) {
+        return await this.PostService.getAllPosts(user_id);
     }
 
-    @EventPattern('get-post-by-type')
-    async getPostById(getPostByTypeDto: GetPostByTypeDto) {
-        return await this.postService.getPostByType(getPostByTypeDto);
+    @Post('get-post-by-type')
+    async getPostByType(
+        @Body() getPostByTypeDto: GetPostByTypeDto
+    ) {
+        return await this.PostService.getPostByType(getPostByTypeDto);
     }
-
 }

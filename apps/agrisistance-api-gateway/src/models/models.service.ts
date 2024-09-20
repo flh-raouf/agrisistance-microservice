@@ -11,7 +11,7 @@ export class ModelsService {
     // Generate business plan
     async generateBusinessPlan(user_id: string, land_id: string) {
 
-        const response = await fetch('http://localhost:8000/generate-business-plan', {
+        const response = await fetch('https://agrisistance-model-service.up.railway.app/generate-business-plan', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -29,7 +29,7 @@ export class ModelsService {
 
         try {
 
-            const response = await fetch('https://agrisistance-model-backend.onrender.com/chat', {  // Adjust the URL if needed
+            const response = await fetch('https://agrisistance-model-service.up.railway.app/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

@@ -1,27 +1,22 @@
 import { NestFactory } from '@nestjs/core';
 import { LandServiceModule } from './land-service.module';
 import { ValidationPipe } from '@nestjs/common';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 async function bootstrap() {
 
-  const app = await NestFactory.createMicroservice<MicroserviceOptions>
-  (
-    LandServiceModule,
-    {
-      transport: Transport.TCP,
-      options: {
-        host: '127.0.0.1',
-        port: 3002,
-      },
-    },
-  );
+  const app = await NestFactory.create(LandServiceModule);
+  
 
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
   }));
 
-  await app.listen();
+  const port = process.env.LAND_SERVICE_PORT || 9093;
+  await app.listen(port).then(() => {
+    console.log(`Land service is running on port ${port}`)
+  }).catch((error) => {
+    console.error('Error starting API Gateway', error);
+  });
 
 }
 bootstrap();

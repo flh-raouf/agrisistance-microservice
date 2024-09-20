@@ -1,46 +1,57 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Post, Get, Put, Delete, Body, Query } from '@nestjs/common';
 import { ProfileService } from './profile.service';
-import { EventPattern } from '@nestjs/microservices';
-import { ProfileDto, UserEmailReqDto, UserPasswordReqDto, UserSubscriptionReqDto } from './dto';
-import { UserEmailVerifyReqDto } from './dto/user-email-verify-req.dto';
+import { ProfileDto, UserEmailReqDto, UserEmailVerifyReqDto, UserPasswordReqDto, UserSubscriptionReqDto } from './dto';
 
-@Controller()
+@Controller('profile')
 export class ProfileController {
     constructor(private readonly profileService: ProfileService) {}
 
-    @EventPattern('getProfile')
-    async getProfile(user_id: string) {
-        return this.profileService.getProfile(user_id);
+    @Post('get-profile')
+    async getProfile(
+        @Body('user_id') user_id: string,
+    ) {
+        return await this.profileService.getProfile(user_id);
     }
 
-    @EventPattern('UpdateProfile')
-    async updateProfile(profileDto: ProfileDto) {
-        return this.profileService.updateProfile(profileDto);
+    @Put('update-profile')
+    async updateProfile(
+        @Body() profileDto: ProfileDto,
+    ) {
+        return await this.profileService.updateProfile(profileDto);
     }
 
-    @EventPattern('DeleteProfile')
-    async deleteProfile(user_id: string) {
-        return this.profileService.deleteProfile(user_id);
+    @Delete('delete-profile')
+    async deleteProfile(
+        @Body('user_id') user_id: string,
+    ) {
+        return await this.profileService.deleteProfile(user_id);
     }
 
-    @EventPattern('UpdateEmail')
-    async updateEmail(userEmailReqDto: UserEmailReqDto) {
-        return this.profileService.updateEmail(userEmailReqDto);
+    @Put('update-email')
+    async updateEmail(
+        @Body() userEmailReqDto: UserEmailReqDto,
+    ) {
+        return await this.profileService.updateEmail(userEmailReqDto);
     }
 
-
-    @EventPattern('VerifyUpdateEmail')
-    async verifyUpdateEmail(userEmailVerifyReq: UserEmailVerifyReqDto) {
-        return this.profileService.verifyUpdateEmail(userEmailVerifyReq);
+    @Post('verify-update-email')
+    async verifyUpdateEmail(
+        @Body() userEmailVerifyReqDto: UserEmailVerifyReqDto,
+    ) {
+        return await this.profileService.verifyUpdateEmail(userEmailVerifyReqDto);
     }
 
-    @EventPattern('UpdatePassword')
-    async updatePassword(userPasswordReqDto: UserPasswordReqDto) {
-        return this.profileService.updatePassword(userPasswordReqDto);
+    @Put('update-password')
+    async updatePassword(
+        @Body() userPasswordReqDto: UserPasswordReqDto,
+    ) {
+        return await this.profileService.updatePassword(userPasswordReqDto);
     }
 
-    @EventPattern('UpdateSubscription')
-    async updateSubcription(userSubscriptionReqDto: UserSubscriptionReqDto) {
-        return this.profileService.updateSubscription(userSubscriptionReqDto);
+    @Put('update-subscription')
+    async updateSubscription(
+        @Body() userSubscriptionReqDto: UserSubscriptionReqDto,
+    ) {
+        return await this.profileService.updateSubscription(userSubscriptionReqDto);
     }
 }

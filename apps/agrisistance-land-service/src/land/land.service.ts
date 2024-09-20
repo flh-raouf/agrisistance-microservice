@@ -173,33 +173,40 @@ export class LandService {
                     error: 'Land not found for the user.',
                 }, HttpStatus.NOT_FOUND);
             }
+
             // Fetch the land and related data
-            const [land, weather, cropTypes, landStatistics, cropMaintenance, finance, businessPlan] = await Promise.all([
-                this.prisma.land.findFirst({
-                  where: {
-                    land_id: userRequestDto.land_id,
-                    user_id: userRequestDto.user_id,
-                  },
-                }),
-                this.prisma.weather.findMany({
-                  where: { land_id: userRequestDto.land_id },
-                }),
-                this.prisma.crop.findMany({
-                  where: { land_id: userRequestDto.land_id },
-                }),
-                this.prisma.landStatistic.findMany({
-                  where: { land_id: userRequestDto.land_id },
-                }),
-                this.prisma.cropMaintenance.findMany({
-                  where: { land_id: userRequestDto.land_id },
-                }),
-                this.prisma.finance.findMany({
-                  where: { land_id: userRequestDto.land_id },
-                }),
-                this.prisma.businessPlan.findMany({
-                  where: { land_id: userRequestDto.land_id },
-                }),
-            ]);
+            const land = await this.prisma.land.findFirst({
+              where: {
+                land_id: userRequestDto.land_id,
+                user_id: userRequestDto.user_id,
+              },
+            })
+
+            const weather = this.prisma.weather.findMany({
+              where: { land_id: userRequestDto.land_id },
+            })
+            
+            const cropTypes = this.prisma.crop.findMany({
+              where: { land_id: userRequestDto.land_id },
+            })
+            
+            const landStatistics = this.prisma.landStatistic.findMany({
+              where: { land_id: userRequestDto.land_id },
+            })
+            
+            const cropMaintenance = this.prisma.cropMaintenance.findMany({
+              where: { land_id: userRequestDto.land_id },
+            })
+            
+            const finance = this.prisma.finance.findMany({
+              where: { land_id: userRequestDto.land_id },
+            })
+            
+            
+            const businessPlan = this.prisma.businessPlan.findMany({
+              where: { land_id: userRequestDto.land_id },
+            })
+            
             // Check if the land was not found
             if (!land) {
               throw new HttpException({
@@ -297,21 +304,21 @@ export class LandService {
             });
 
             // Call the external service to generate a business plan
-            // const response = await fetch(
-            //     'http://localhost:8000/generate-business-plan',
-            //     {
-            //       method: 'POST',
-            //       headers: { 'Content-Type': 'application/json' },
-            //       body: JSON.stringify({ land_id: updateLandDto.land_id }),
-            //     }
-            // );
+            const response = await fetch(
+                'https://agrisistance-model-microservice-production.up.railway.app/generate-business-plan',
+                {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ land_id: updateLandDto.land_id }),
+                }
+            );
 
-            // const businessPlan = await response.json();
+            const businessPlan = await response.json();
 
             return {
                 message: 'Land updated successfully',
                 land_id: updateLandDto.land_id,
-                // businessplan: businessPlan,
+                businessplan: businessPlan,
             };
 
 
@@ -370,15 +377,15 @@ export class LandService {
             }
 
             // Delete the land and related data from the database
-            await Promise.all([
-                this.prisma.finance.deleteMany({ where: { land_id: userRequestDto.land_id } }),
-                this.prisma.weather.deleteMany({ where: { land_id: userRequestDto.land_id } }),
-                this.prisma.cropMaintenance.deleteMany({ where: { land_id: userRequestDto.land_id } }),
-                this.prisma.crop.deleteMany({ where: { land_id: userRequestDto.land_id } }),
-                this.prisma.businessPlan.deleteMany({ where: { land_id: userRequestDto.land_id } }),
-                this.prisma.landStatistic.deleteMany({ where: { land_id: userRequestDto.land_id } }),
-                this.prisma.land.delete({where: { land_id: userRequestDto.land_id, user_id: userRequestDto.user_id },}),
-            ])
+            
+            await this.prisma.finance.deleteMany({ where: { land_id: userRequestDto.land_id } })
+            await this.prisma.weather.deleteMany({ where: { land_id: userRequestDto.land_id } })
+            await this.prisma.cropMaintenance.deleteMany({ where: { land_id: userRequestDto.land_id } })
+            await this.prisma.crop.deleteMany({ where: { land_id: userRequestDto.land_id } })
+            await this.prisma.businessPlan.deleteMany({ where: { land_id: userRequestDto.land_id } })
+            await this.prisma.landStatistic.deleteMany({ where: { land_id: userRequestDto.land_id } })
+            await this.prisma.land.delete({where: { land_id: userRequestDto.land_id, user_id: userRequestDto.user_id },})
+    
 
             return { message: 'Land deleted successfully' }
         

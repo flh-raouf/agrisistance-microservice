@@ -6,21 +6,16 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice<MicroserviceOptions>
-  (
-    UserServiceModule,
-    {
-      transport: Transport.TCP,
-      options: {
-        host: '127.0.0.1',
-        port: 3001,
-      },
-    },
-  );
+  const app = await NestFactory.create(UserServiceModule);
 
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
   }));
-  await app.listen();
+  const port = process.env.USER_SERVICE_PORT || 9093;
+  await app.listen(port).then(() => {
+    console.log(`User service is running on port ${port}`)
+  }).catch((error) => {
+    console.error('Error starting API Gateway', error);
+  });
 }
 bootstrap();

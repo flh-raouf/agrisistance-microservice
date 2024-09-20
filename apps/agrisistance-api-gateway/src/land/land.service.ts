@@ -1,55 +1,68 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { AddLandDto, UpdateLandDto, UserRequestDto } from './dto';
-import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
-
 
 @Injectable()
 export class LandService {
 
-    // Send TCP request to land service
-    constructor(
-        @Inject('LAND_SERVICE') private readonly landClient: ClientProxy, 
-    ) {
-        this.landClient = ClientProxyFactory.create({
-            transport: Transport.TCP,
-            options: {
-                host: '127.0.0.1',
-                port: 3002, 
-            },
-        });
-    }
+    private readonly serviceUrl = 'https://agrisistance-land-service.up.railway.app/land'; 
 
     // Add Land
-    addLand( addLandDto: AddLandDto, user_id: string ) {
+    async addLand(addLandDto: AddLandDto, user_id: string) {
         addLandDto.user_id = user_id;
-        return this.landClient.send( 'AddLand', addLandDto );  
+        const response = await fetch(`${this.serviceUrl}/add-land`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(addLandDto)
+        });
+        const data = await response.json();
+        return data;
     }
 
     // Get All Lands
-    getAllLands(user_id: string) {    
-        return this.landClient.send( 'GetAllLands', user_id );
+    async getAllLands(user_id: string) {
+        const response = await fetch(`${this.serviceUrl}/get-all-lands`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({user_id})
+        });
+        const data = await response.json();
+        return data;
     }
 
     // Get Land By Id
-    getLandById(user_id: string, land_id: string) {
-        const userRequestDto: UserRequestDto = new UserRequestDto(); 
-        userRequestDto.user_id = user_id;
-        userRequestDto.land_id = land_id;  
-        return this.landClient.send( 'GetLandById', userRequestDto );
+    async getLandById(user_id: string, land_id: string) {
+        const userRequestDto: UserRequestDto = { user_id, land_id };
+        const response = await fetch(`${this.serviceUrl}/get-land-by-id`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userRequestDto)
+        });
+        const data = await response.json();
+        return data;
     }
 
     // Update Land
-    updateLand(user_id: string, land_id: string, updateLandDto: UpdateLandDto ) {
+    async updateLand(user_id: string, land_id: string, updateLandDto: UpdateLandDto) {
         updateLandDto.user_id = user_id;
         updateLandDto.land_id = land_id;
-        return this.landClient.send( 'UpdateLand', updateLandDto );
+        const response = await fetch(`${this.serviceUrl}/update-land`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updateLandDto)
+        });
+        const data = await response.json();
+        return data;
     }
 
     // Delete Land
-    deleteLand(user_id: string, land_id: string) {
-        const userRequestDto: UserRequestDto = new UserRequestDto(); 
-        userRequestDto.user_id = user_id;
-        userRequestDto.land_id = land_id;
-        return this.landClient.send( 'DeleteLand', userRequestDto );
+    async deleteLand(user_id: string, land_id: string) {
+        const userRequestDto: UserRequestDto = { user_id, land_id };
+        const response = await fetch(`${this.serviceUrl}/delete-land`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userRequestDto)
+        });
+        const data = await response.json();
+        return data;
     }
 }

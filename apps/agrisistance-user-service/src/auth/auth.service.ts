@@ -8,7 +8,7 @@ import * as argon from 'argon2';
 import * as twilio from 'twilio';
 import { EmailService } from '../.email/email.service';
 import { ConfigService } from '@nestjs/config';
-import { Cache } from 'cache-manager';
+
 
 @Injectable()
 export class AuthService {
@@ -21,8 +21,6 @@ export class AuthService {
         private readonly prismaNetwork: PrismaNetworkService,
         private readonly emailService: EmailService,
         private readonly jwtService: JwtService,
-
-        @Inject('CACHE_MANAGER') private cacheManager: Cache
     ) {}
 
     async register(authDto: AuthDto) {
@@ -136,15 +134,10 @@ export class AuthService {
             if (user.is_2fa_enabled) {
                 const otp = Math.floor(100000 + Math.random() * 900000);
                 
-                // We use Either database for verification
-                // await this.prismaUser.user.update({
-                //     where: { user_id: user.user_id },
-                //     data: { secret_2fa: otp.toString() },
-                // });
-
-
-                // Or we use Redis
-                await this.cacheManager.set(user.user_id, otp)
+                await this.prismaUser.user.update({
+                    where: { user_id: user.user_id },
+                    data: { secret_2fa: otp.toString() },
+                });
 
 
                 // Send the SMS Text : This part is commented as it consume credits from my twilio account (it works fine)
@@ -188,22 +181,17 @@ export class AuthService {
 
     async verifyOtp(verifyOtpDto: VerifyOtpDto) {
         try {
-            // We use Either database for verification
 
-            // const user = await this.prismaUser.user.findUnique({
-            //     where: { user_id: verifyOtpDto.user_id },
-            // });
+            const user = await this.prismaUser.user.findUnique({
+                where: { user_id: verifyOtpDto.user_id },
+            });
 
-            // if (!user || !user.secret_2fa) {
-            //     throw new NotFoundException('User not found');
-            // }
+            if (!user || !user.secret_2fa) {
+                throw new NotFoundException('User not found');
+            }
+   
+            if (verifyOtpDto.otp !== user.secret_2fa) {
 
-
-             // Or caching using Redis
-            const secret_2fa = await this.cacheManager.get(verifyOtpDto.user_id);
-            
-            // if (verifyOtpDto.otp !== user.secret_2fa) {
-            if (verifyOtpDto.otp !== secret_2fa) {
                 return {
                     statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
                     timestamp: new Date().toISOString(),

@@ -6,6 +6,8 @@ import { NotFoundFilter } from './.common/filters/not-found.filter';
 async function bootstrap() {
   const app = await NestFactory.create(ApiGatewayModule);
 
+  app.enableCors();
+
   app.setGlobalPrefix('api');
 
   app.useGlobalPipes(new ValidationPipe({
@@ -15,7 +17,7 @@ async function bootstrap() {
   // app.useGlobalFilters(new NotFoundFilter())
 
 
-  const port = process.env.PORT || 9090;
+  const port = process.env.API_GATEWAY_PORT || 9090;
   await app.listen(port).then(() => {
     console.log(`API Gateway is running on port ${port}`)
   }).catch((error) => {

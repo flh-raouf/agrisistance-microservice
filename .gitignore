@@ -2,7 +2,6 @@
 /dist
 /node_modules
 /build
-apps/*/generated/
 
 # Logs
 logs
@@ -37,6 +36,7 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 # dotenv environment variable files
+env.old
 .env
 .env.development.local
 .env.test.local

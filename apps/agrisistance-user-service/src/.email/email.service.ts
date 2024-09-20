@@ -70,15 +70,16 @@ export class EmailService {
         
           // Customize email content based on type
           if (type === 'confirmation') {
-            emailHtml = emailTemplate.replace('verification_link', `https://agrisistance-server.onrender.com/api/auth/register/verify/${token}`);
+            emailHtml = emailTemplate.replace('verification_link', `https://agrisistance-api-gateway.up.railway.app/api/auth/register/verify/${token}`);
           } else if (type === 'OTPverify') {
             emailHtml = emailTemplate.replace('{{otp}}', token);
           } else if (type === 'resetPassword') {
-            emailHtml = emailTemplate.replace('reset_link', `https://agrisistatnce.netlify.app/auth/reset-password/${token}`);
+            emailHtml = emailTemplate.replace('reset_link', `https://agrisistance.netlify.app/auth/reset-password/${token}`);
           } else if (type === 'updateVerification') {
-            emailHtml = emailTemplate.replace('verification_link', `https://agrisistance-server.onrender.com/api/profile/update-email/verify/${token}`);
+            emailHtml = emailTemplate.replace('verification_link', `https://agrisistance-api-gateway.up.railway.app/api/profile/update-email/verify/${token}`);
           }
-        
+   
+          
           const mailOptions = {
             from: this.configService.get<string>('EMAIL_USER'),
             to: email,
