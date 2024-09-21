@@ -209,6 +209,9 @@ export class PostService {
                 }
             }
 
+            await this.prisma.user_Seen_Post.deleteMany({
+                where: { post_id: deletePostDto.post_id },
+            });
             await this.prisma.post.delete({
                 where: { post_id: deletePostDto.post_id },
             });
