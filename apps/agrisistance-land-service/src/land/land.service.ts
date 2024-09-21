@@ -180,30 +180,32 @@ export class LandService {
                 land_id: userRequestDto.land_id,
                 user_id: userRequestDto.user_id,
               },
+
+
             })
 
-            const weather = this.prisma.weather.findMany({
+            const weather = await this.prisma.weather.findFirst({
               where: { land_id: userRequestDto.land_id },
             })
             
-            const cropTypes = this.prisma.crop.findMany({
+            const cropTypes = await this.prisma.crop.findMany({
               where: { land_id: userRequestDto.land_id },
             })
             
-            const landStatistics = this.prisma.landStatistic.findMany({
+            const landStatistics = await this.prisma.landStatistic.findFirst({
               where: { land_id: userRequestDto.land_id },
             })
             
-            const cropMaintenance = this.prisma.cropMaintenance.findMany({
+            const cropMaintenance = await this.prisma.cropMaintenance.findFirst({
               where: { land_id: userRequestDto.land_id },
             })
             
-            const finance = this.prisma.finance.findMany({
+            const finance = await this.prisma.finance.findFirst({
               where: { land_id: userRequestDto.land_id },
             })
             
             
-            const businessPlan = this.prisma.businessPlan.findMany({
+            const businessPlan = await this.prisma.businessPlan.findFirst({
               where: { land_id: userRequestDto.land_id },
             })
             
@@ -305,7 +307,7 @@ export class LandService {
 
             // Call the external service to generate a business plan
             const response = await fetch(
-                'https://agrisistance-model-microservice-production.up.railway.app/generate-business-plan',
+                'https://agrisistance-model-service.up.railway.app/generate-business-plan',
                 {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
