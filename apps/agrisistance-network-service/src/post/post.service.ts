@@ -206,6 +206,9 @@ export class PostService {
                 }
             }
 
+            await this.prisma.user_Seen_Post.deleteMany({
+                where: { post_id: deletePostDto.post_id },
+            });
             await this.prisma.post.delete({
                 where: { post_id: deletePostDto.post_id },
             });
@@ -221,6 +224,8 @@ export class PostService {
             };
         }
     }
+
+    
 
     async getMyPosts(user_id: string) {
         try {
@@ -253,16 +258,18 @@ export class PostService {
 
     async getAllPosts(user_id: string) {
         try {
-            const seenPosts = await this.prisma.user_Seen_Post.findMany({
-                where: { user_id: user_id },
-                select: { post_id: true },
-            });
+            
+            // This functionality insure that the user doesn't get the post already saw but we'll comment this part for now since there is not many posts and users in the databases
+            // const seenPosts = await this.prisma.user_Seen_Post.findMany({
+            //     where: { user_id: user_id },
+            //     select: { post_id: true },
+            // });
 
-            const seenPostIds = seenPosts.map((seenPost) => seenPost.post_id);
+            // const seenPostIds = seenPosts.map((seenPost) => seenPost.post_id);
 
             const posts = await this.prisma.post.findMany({
-                where: { post_id: { notIn: seenPostIds } , is_active: true },
-                take: 30,
+                // where: { post_id: { notIn: seenPostIds } , is_active: true },
+                // take: 30,
                 include: {
                     user: {
                         select: {
@@ -279,7 +286,8 @@ export class PostService {
 
             const userSeenPosts = posts.map((post) => ({ user_id: user_id, post_id: post.post_id }));
 
-            await this.prisma.user_Seen_Post.createMany({ data: userSeenPosts });
+
+            //await this.prisma.user_Seen_Post.createMany({ data: userSeenPosts });
 
             return posts;
         } catch (error) {
@@ -295,18 +303,20 @@ export class PostService {
 
     async getPostByType(getPostByTypeDto: GetPostByTypeDto) {
         try {
+            
+            // This functionality insure that the user doesn't get the post already saw but we'll comment this part for now since there is not many posts and users in the databases
             const { user_id, post_type } = getPostByTypeDto;
 
-            const seenPosts = await this.prisma.user_Seen_Post.findMany({
-                where: { user_id: user_id, post: { post_type: post_type } },
-                select: { post_id: true },
-            });
+            // const seenPosts = await this.prisma.user_Seen_Post.findMany({
+            //     where: { user_id: user_id, post: { post_type: post_type } },
+            //     select: { post_id: true },
+            // });
 
-            const seenPostIds = seenPosts.map((seenPost) => seenPost.post_id);
+            // const seenPostIds = seenPosts.map((seenPost) => seenPost.post_id);
 
             const posts = await this.prisma.post.findMany({
-                where: { post_type: post_type, post_id: { notIn: seenPostIds } , is_active: true },
-                take: 30,
+                // where: { post_type: post_type, post_id: { notIn: seenPostIds } , is_active: true },
+                // take: 30,
                 include: {
                     user: {
                         select: {
@@ -323,7 +333,8 @@ export class PostService {
 
             const userSeenPosts = posts.map((post) => ({ user_id: user_id, post_id: post.post_id }));
 
-            await this.prisma.user_Seen_Post.createMany({ data: userSeenPosts });
+
+            //await this.prisma.user_Seen_Post.createMany({ data: userSeenPosts });
 
             return posts;
         } catch (error) {
