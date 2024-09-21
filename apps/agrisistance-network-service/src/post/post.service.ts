@@ -206,6 +206,9 @@ export class PostService {
                 }
             }
 
+            await this.prisma.user_Seen_Post.deleteMany({
+                where: { post_id: deletePostDto.post_id },
+            });
             await this.prisma.post.delete({
                 where: { post_id: deletePostDto.post_id },
             });
@@ -222,6 +225,7 @@ export class PostService {
         }
     }
 
+    
 
     async getMyPosts(user_id: string) {
         try {
@@ -254,8 +258,8 @@ export class PostService {
 
     async getAllPosts(user_id: string) {
         try {
+            
             // This functionality insure that the user doesn't get the post already saw but we'll comment this part for now since there is not many posts and users in the databases
-
             // const seenPosts = await this.prisma.user_Seen_Post.findMany({
             //     where: { user_id: user_id },
             //     select: { post_id: true },
@@ -282,7 +286,8 @@ export class PostService {
 
             const userSeenPosts = posts.map((post) => ({ user_id: user_id, post_id: post.post_id }));
 
-            await this.prisma.user_Seen_Post.createMany({ data: userSeenPosts });
+
+            //await this.prisma.user_Seen_Post.createMany({ data: userSeenPosts });
 
             return posts;
         } catch (error) {
@@ -298,8 +303,9 @@ export class PostService {
 
     async getPostByType(getPostByTypeDto: GetPostByTypeDto) {
         try {
+            
             // This functionality insure that the user doesn't get the post already saw but we'll comment this part for now since there is not many posts and users in the databases
-            // const { user_id, post_type } = getPostByTypeDto;
+            const { user_id, post_type } = getPostByTypeDto;
 
             // const seenPosts = await this.prisma.user_Seen_Post.findMany({
             //     where: { user_id: user_id, post: { post_type: post_type } },
@@ -325,9 +331,10 @@ export class PostService {
                 },
             });
 
-            const userSeenPosts = posts.map((post) => ({ user_id: getPostByTypeDto.user_id, post_id: post.post_id }));
+            const userSeenPosts = posts.map((post) => ({ user_id: user_id, post_id: post.post_id }));
 
-            await this.prisma.user_Seen_Post.createMany({ data: userSeenPosts });
+
+            //await this.prisma.user_Seen_Post.createMany({ data: userSeenPosts });
 
             return posts;
         } catch (error) {
