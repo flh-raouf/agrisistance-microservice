@@ -306,21 +306,21 @@ export class LandService {
             });
 
             // Call the external service to generate a business plan
-            const response = await fetch(
-                'https://agrisistance-model-service.up.railway.app/generate-business-plan',
-                {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ land_id: updateLandDto.land_id }),
-                }
-            );
+            //const response = await fetch(
+               // 'https://agrisistance-model-service.up.railway.app/generate-business-plan',
+               // {
+                 // method: 'POST',
+                 // headers: { 'Content-Type': 'application/json' },
+                  //body: JSON.stringify({ land_id: updateLandDto.land_id }),
+              //  }
+          //  );
 
-            const businessPlan = await response.json();
+           // const businessPlan = await response.json();
 
             return {
                 message: 'Land updated successfully',
                 land_id: updateLandDto.land_id,
-                businessplan: businessPlan,
+                //businessplan: businessPlan,
             };
 
 
